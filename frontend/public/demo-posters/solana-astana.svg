@@ -1,0 +1,21 @@
+<svg width="900" height="1280" viewBox="0 0 900 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1280" fill="#09090B"/>
+  <rect x="64" y="64" width="772" height="1152" rx="44" fill="url(#solana)"/>
+  <circle cx="255" cy="250" r="150" fill="#A855F7" fill-opacity="0.28"/>
+  <circle cx="660" cy="958" r="210" fill="#22D3EE" fill-opacity="0.18"/>
+  <text x="116" y="184" fill="#E5E7EB" font-size="42" font-family="Arial, sans-serif" letter-spacing="9">ASTANA GOLF CLUB</text>
+  <text x="116" y="422" fill="#FFFFFF" font-size="104" font-family="Georgia, serif" font-weight="700">SOLΛNA</text>
+  <text x="116" y="532" fill="#FFFFFF" font-size="70" font-family="Georgia, serif">FIRST SEASON</text>
+  <text x="116" y="624" fill="#FDE68A" font-size="40" font-family="Arial, sans-serif" letter-spacing="5">17 MAY 2026  •  19:00</text>
+  <text x="116" y="714" fill="#E5E7EB" font-size="34" font-family="Arial, sans-serif">Flo Rida, Busta Rhymes, Tyga,</text>
+  <text x="116" y="760" fill="#E5E7EB" font-size="34" font-family="Arial, sans-serif">Nicole Scherzinger, Timbaland and more</text>
+  <rect x="116" y="938" width="344" height="96" rx="26" fill="#FFFFFF" fill-opacity="0.14"/>
+  <text x="142" y="1000" fill="#FFFFFF" font-size="62" font-family="Georgia, serif" font-weight="700">62 820 ₸</text>
+  <defs>
+    <linearGradient id="solana" x1="64" y1="64" x2="836" y2="1216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766E"/>
+      <stop offset="0.45" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,0 +1,21 @@
+<svg width="900" height="1280" viewBox="0 0 900 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1280" fill="#020617"/>
+  <rect x="72" y="72" width="756" height="1136" rx="44" fill="url(#cads)"/>
+  <circle cx="692" cy="248" r="145" fill="#FB7185" fill-opacity="0.22"/>
+  <circle cx="249" cy="970" r="180" fill="#FACC15" fill-opacity="0.14"/>
+  <text x="122" y="178" fill="#E2E8F0" font-size="44" font-family="Arial, sans-serif" letter-spacing="8">ASP ARENA KONAEV</text>
+  <text x="122" y="420" fill="#FFFFFF" font-size="92" font-family="Georgia, serif" font-weight="700">JAH</text>
+  <text x="122" y="520" fill="#FFFFFF" font-size="92" font-family="Georgia, serif" font-weight="700">KHALIB</text>
+  <text x="122" y="616" fill="#FDE68A" font-size="40" font-family="Arial, sans-serif" letter-spacing="4">CADS 2026  •  9 MAY  •  20:00</text>
+  <text x="122" y="704" fill="#E2E8F0" font-size="36" font-family="Arial, sans-serif">Afterparty headline set at ASP Arena</text>
+  <text x="122" y="752" fill="#E2E8F0" font-size="36" font-family="Arial, sans-serif">City of Konaev</text>
+  <rect x="122" y="922" width="290" height="92" rx="26" fill="#FFFFFF" fill-opacity="0.12"/>
+  <text x="148" y="983" fill="#FFFFFF" font-size="66" font-family="Georgia, serif" font-weight="700">10 000 ₸</text>
+  <defs>
+    <linearGradient id="cads" x1="72" y1="72" x2="828" y2="1208" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C2D12"/>
+      <stop offset="0.45" stop-color="#7E22CE"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+</svg>

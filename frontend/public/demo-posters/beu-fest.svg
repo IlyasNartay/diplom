@@ -1,0 +1,21 @@
+<svg width="900" height="1280" viewBox="0 0 900 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1280" fill="#0B1120"/>
+  <rect x="70" y="70" width="760" height="1140" rx="44" fill="url(#beu)"/>
+  <circle cx="676" cy="230" r="142" fill="#34D399" fill-opacity="0.26"/>
+  <circle cx="236" cy="970" r="190" fill="#FDE68A" fill-opacity="0.18"/>
+  <text x="116" y="182" fill="#ECFDF5" font-size="42" font-family="Arial, sans-serif" letter-spacing="8">SUNKAR FACILITIES  •  ALMATY</text>
+  <text x="116" y="428" fill="#FFFFFF" font-size="98" font-family="Georgia, serif" font-weight="700">BEU FEST</text>
+  <text x="116" y="530" fill="#FFFFFF" font-size="70" font-family="Georgia, serif">5 YEARS</text>
+  <text x="116" y="626" fill="#FDE68A" font-size="40" font-family="Arial, sans-serif" letter-spacing="4">6 JUNE 2026  •  18:00</text>
+  <text x="116" y="714" fill="#ECFDF5" font-size="34" font-family="Arial, sans-serif">The major early-summer festival with</text>
+  <text x="116" y="760" fill="#ECFDF5" font-size="34" font-family="Arial, sans-serif">modern Kazakh music and live atmosphere</text>
+  <rect x="116" y="938" width="310" height="96" rx="28" fill="#FFFFFF" fill-opacity="0.14"/>
+  <text x="144" y="1000" fill="#FFFFFF" font-size="62" font-family="Georgia, serif" font-weight="700">16 000 ₸</text>
+  <defs>
+    <linearGradient id="beu" x1="70" y1="70" x2="830" y2="1210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#065F46"/>
+      <stop offset="0.5" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+  </defs>
+</svg>

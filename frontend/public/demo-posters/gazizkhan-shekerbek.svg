@@ -1,0 +1,21 @@
+<svg width="900" height="1280" viewBox="0 0 900 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1280" fill="#0F172A"/>
+  <rect x="70" y="70" width="760" height="1140" rx="44" fill="url(#bg)"/>
+  <circle cx="702" cy="267" r="170" fill="#F1A86D" fill-opacity="0.22"/>
+  <circle cx="217" cy="994" r="210" fill="#FFFFFF" fill-opacity="0.08"/>
+  <text x="118" y="180" fill="#F8EEDF" font-size="44" font-family="Arial, sans-serif" letter-spacing="8">ALMATY ARENA</text>
+  <text x="118" y="412" fill="#FFFFFF" font-size="82" font-family="Georgia, serif" font-weight="700">GAZIZKHAN</text>
+  <text x="118" y="512" fill="#FFFFFF" font-size="82" font-family="Georgia, serif" font-weight="700">SHEKERBEK</text>
+  <text x="118" y="610" fill="#F3B57A" font-size="40" font-family="Arial, sans-serif" letter-spacing="4">2 MAY 2026  •  19:30</text>
+  <text x="118" y="710" fill="#D5D9E3" font-size="38" font-family="Arial, sans-serif">A major arena concert in Almaty</text>
+  <text x="118" y="760" fill="#D5D9E3" font-size="38" font-family="Arial, sans-serif">with a 90-minute live set</text>
+  <path d="M118 917H782" stroke="#F1A86D" stroke-width="5" stroke-linecap="round"/>
+  <text x="118" y="1032" fill="#FFFFFF" font-size="74" font-family="Georgia, serif" font-weight="700">from 5 000 ₸</text>
+  <text x="118" y="1112" fill="#D5D9E3" font-size="34" font-family="Arial, sans-serif">Official demo card styled for mobile showcase</text>
+  <defs>
+    <linearGradient id="bg" x1="70" y1="70" x2="830" y2="1210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#232B68"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+</svg>

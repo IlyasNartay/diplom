@@ -1,0 +1,20 @@
+<svg width="900" height="1280" viewBox="0 0 900 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1280" fill="#F4F4F5"/>
+  <rect x="66" y="66" width="768" height="1148" rx="46" fill="#FFFFFF"/>
+  <rect x="66" y="66" width="768" height="1148" rx="46" stroke="#D4D4D8" stroke-width="6"/>
+  <rect x="102" y="120" width="696" height="388" rx="34" fill="url(#sky)"/>
+  <path d="M118 486C260 418 329 408 450 408C571 408 640 418 782 486V512H118V486Z" fill="#172554"/>
+  <text x="112" y="620" fill="#0F172A" font-size="50" font-family="Arial, sans-serif" letter-spacing="7">SYMPHONIC ORCHESTRA</text>
+  <text x="112" y="760" fill="#172554" font-size="100" font-family="Georgia, serif" font-weight="700">EPIC OF</text>
+  <text x="112" y="868" fill="#172554" font-size="100" font-family="Georgia, serif" font-weight="700">VALOR</text>
+  <text x="112" y="952" fill="#A16207" font-size="38" font-family="Arial, sans-serif" letter-spacing="4">8 MAY 2026  •  ASTANA  •  19:00</text>
+  <text x="112" y="1032" fill="#52525B" font-size="35" font-family="Arial, sans-serif">E. Rakhmadiev State Academic Philharmonic Concert Hall</text>
+  <text x="112" y="1120" fill="#172554" font-size="70" font-family="Georgia, serif" font-weight="700">from 3 000 ₸</text>
+  <defs>
+    <linearGradient id="sky" x1="102" y1="120" x2="798" y2="508" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAB308"/>
+      <stop offset="0.55" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#172554"/>
+    </linearGradient>
+  </defs>
+</svg>

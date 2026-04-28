@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  background: #090b18;
+  color: #f8eee6;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(44, 50, 121, 0.36), transparent 36%),
+    linear-gradient(180deg, #090b18 0%, #0d102d 100%);
+  color: #f8eee6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(241, 168, 109, 0.28);
+  color: #fff7ef;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: Georgia, "Times New Roman", serif;
+    letter-spacing: 0.01em;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply outline-none;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-[2rem] border border-white/10 bg-white/5 shadow-glow backdrop-blur-xl;
+  }
+
+  .panel-soft {
+    @apply rounded-[1.5rem] border border-white/10 bg-sdu-ink/70 shadow-copper;
+  }
+
+  .field {
+    @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-sdu-mist/60 focus:border-sdu-copper/70 focus:bg-white/10;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full border border-sdu-copper/60 bg-sdu-copper px-5 py-3 text-sm font-semibold text-sdu-night transition hover:scale-[1.01] hover:bg-[#f5b27e] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10;
+  }
+
+  .eyebrow {
+    @apply text-xs uppercase tracking-[0.34em] text-sdu-copper/80;
+  }
+
+  .headline {
+    @apply font-display text-4xl leading-tight sm:text-5xl lg:text-6xl;
+  }
+}
+
+@media (max-width: 640px) {
+  .panel {
+    border-radius: 1.5rem;
+  }
+
+  .panel-soft {
+    border-radius: 1.25rem;
+  }
+
+  .field {
+    border-radius: 1rem;
+    padding: 0.85rem 0.95rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    min-height: 2.95rem;
+    border-radius: 9999px;
+  }
+
+  .headline {
+    font-size: 2.4rem;
+    line-height: 1.08;
+  }
+}

@@ -1,0 +1,14 @@
+<svg width="900" height="1280" viewBox="0 0 900 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1280" fill="#111827"/>
+  <rect x="64" y="64" width="772" height="1152" rx="44" fill="#F5E6D5"/>
+  <rect x="64" y="64" width="772" height="1152" rx="44" stroke="#D4A373" stroke-width="6"/>
+  <circle cx="700" cy="242" r="146" fill="#2C3279" fill-opacity="0.18"/>
+  <circle cx="218" cy="1000" r="182" fill="#C2410C" fill-opacity="0.14"/>
+  <text x="118" y="180" fill="#7C2D12" font-size="42" font-family="Arial, sans-serif" letter-spacing="8">MOTOR CLUB  •  ALMATY</text>
+  <text x="118" y="432" fill="#111827" font-size="120" font-family="Georgia, serif" font-weight="700">KOVACS</text>
+  <text x="118" y="536" fill="#2C3279" font-size="40" font-family="Arial, sans-serif" letter-spacing="5">29 MAY 2026  •  20:00</text>
+  <text x="118" y="638" fill="#374151" font-size="35" font-family="Arial, sans-serif">An international live set in Almaty</text>
+  <text x="118" y="684" fill="#374151" font-size="35" font-family="Arial, sans-serif">with a new electronic-era program</text>
+  <path d="M118 910H782" stroke="#2C3279" stroke-width="8" stroke-linecap="round"/>
+  <text x="118" y="1026" fill="#111827" font-size="72" font-family="Georgia, serif" font-weight="700">from 23 000 ₸</text>
+</svg>
