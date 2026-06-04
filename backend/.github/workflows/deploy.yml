@@ -1,0 +1,65 @@
+name: Deploy to DigitalOcean VPS
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          password: ${{ secrets.DO_PASSWORD }}
+          command_timeout: 10m
+
+          script: |
+            set -e
+
+            cd ~/ticketon-microservices
+
+            git checkout master
+            git pull origin master
+
+            # ---------- 1. Ensure Docker Compose V2 ----------
+            if ! docker compose version >/dev/null 2>&1; then
+              mkdir -p ~/.docker/cli-plugins/
+              curl -SL https://github.com/docker/compose/releases/download/v2.24.7/docker-compose-linux-x86_64 \
+                -o ~/.docker/cli-plugins/docker-compose
+              chmod +x ~/.docker/cli-plugins/docker-compose
+            fi
+
+            # ---------- 2. Build new images (no restart yet) ----------
+            docker compose build
+
+            # ---------- 3. Start/ensure infrastructure is healthy ----------
+            docker compose up -d postgres kafka redis zookeeper
+            echo "Waiting for Postgres to be healthy..."
+            for i in $(seq 1 30); do
+              if docker compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+                echo "Postgres is ready."
+                break
+              fi
+              if [ "$i" -eq 30 ]; then
+                echo "ERROR: Postgres failed to become ready in 60s"
+                exit 1
+              fi
+              sleep 2
+            done
+
+            # ---------- 4. Run Alembic migrations BEFORE restarting apps ----------
+            echo "Running database migrations..."
+            docker compose run --rm -T --no-deps --entrypoint "" \
+              orchestrator alembic upgrade head
+            echo "Migrations applied successfully."
+
+            # ---------- 5. Restart app services with new images ----------
+            docker compose up -d --no-build --remove-orphans
+
+            # ---------- 6. Cleanup ----------
+            docker image prune -f

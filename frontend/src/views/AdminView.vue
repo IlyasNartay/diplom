@@ -166,6 +166,19 @@ function toDateTimeLocalValue(value) {
   return new Date(date.getTime() - timezoneOffsetMs).toISOString().slice(0, 16)
 }
 
+function toIsoDateTime(value) {
+  if (!value) {
+    return null
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return null
+  }
+
+  return date.toISOString()
+}
+
 function rebuildDrafts() {
   resetDraftCollection(categoryDrafts)
   resetDraftCollection(cityDrafts)
@@ -450,8 +463,13 @@ async function createSession() {
 
   resetMessage()
   try {
+    const startTime = toIsoDateTime(sessionForm.start_time)
+    if (!startTime) {
+      throw new Error('Укажи корректную дату и время сеанса')
+    }
+
     const createdSession = await api.post(`/api/admin/events/${selectedEvent.value.id}/sessions`, {
-      start_time: new Date(sessionForm.start_time).toISOString(),
+      start_time: startTime,
       hall_name: sessionForm.hall_name,
       price: Number(sessionForm.price)
     })
@@ -469,8 +487,13 @@ async function createSession() {
 async function updateSession(sessionId) {
   resetMessage()
   try {
+    const startTime = toIsoDateTime(sessionDrafts[sessionId].start_time)
+    if (!startTime) {
+      throw new Error('Укажи корректную дату и время сеанса')
+    }
+
     await api.put(`/api/admin/sessions/${sessionId}`, {
-      start_time: new Date(sessionDrafts[sessionId].start_time).toISOString(),
+      start_time: startTime,
       hall_name: sessionDrafts[sessionId].hall_name,
       price: Number(sessionDrafts[sessionId].price)
     })
@@ -639,6 +662,14 @@ onBeforeUnmount(() => {
             >
               {{ event.title }}
             </button>
+          </div>
+
+          <div
+            v-if="!filteredEvents.length"
+            class="mt-5 rounded-[1.25rem] border border-dashed px-4 py-5 text-sm"
+            :class="theme.isDark.value ? 'border-white/10 text-sdu-mist/70' : 'border-slate-300 text-slate-500'"
+          >
+            По текущим фильтрам событий не найдено.
           </div>
 
           <div class="mt-4 text-sm" :class="textMutedClass">

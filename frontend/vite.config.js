@@ -8,33 +8,11 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/app-icon.svg', 'icons/mask-icon.svg'],
-      manifest: {
-        name: 'High-Load Ticket Booking System',
-        short_name: 'SDU Tix',
-        description: 'Design and Implementation of a High-Load Online Ticket Booking System Using Microservices Architecture',
-        theme_color: '#0d102d',
-        background_color: '#090b18',
-        display: 'standalone',
-        orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
-        icons: [
-          {
-            src: '/icons/app-icon.svg',
-            sizes: '512x512',
-            type: 'image/svg+xml',
-            purpose: 'any'
-          },
-          {
-            src: '/icons/mask-icon.svg',
-            sizes: '512x512',
-            type: 'image/svg+xml',
-            purpose: 'maskable'
-          }
-        ]
-      },
+      injectRegister: 'auto',
       workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,svg,png,webp}'],
         runtimeCaching: [
           {
@@ -59,6 +37,45 @@ export default defineConfig({
               cacheName: 'api-cache',
               networkTimeoutSeconds: 5
             }
+          }
+        ]
+      },
+      includeAssets: [
+        'icons/app-icon.svg',
+        'icons/mask-icon.svg',
+        'icons/pwa-sdu.svg',
+        'icons/pwa-icon-192.png',
+        'icons/pwa-icon-512.png',
+        'icons/apple-touch-icon.png'
+      ],
+      manifest: {
+        name: 'HLTB',
+        short_name: 'HLTB',
+        description: 'Design and Implementation of a High-Load Online Ticket Booking System Using Microservices Architecture',
+        theme_color: '#0d102d',
+        background_color: '#090b18',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        scope: '/',
+        icons: [
+          {
+            src: '/icons/pwa-icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icons/pwa-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icons/pwa-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }

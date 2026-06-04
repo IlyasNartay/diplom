@@ -1,16 +1,12 @@
 const moneyFormatter = new Intl.NumberFormat('ru-RU')
-const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
-  dateStyle: 'long',
-  timeStyle: 'short'
-})
 
 export function formatMoney(value) {
   return `${moneyFormatter.format(Number(value || 0))} ₸`
 }
 
-export function formatDateTime(value) {
+export function formatDateTime(value, locale = 'ru-RU') {
   if (!value) {
-    return 'Дата уточняется'
+    return locale.startsWith('en') ? 'Date TBD' : 'Дата уточняется'
   }
 
   const parsed = new Date(value)
@@ -18,7 +14,10 @@ export function formatDateTime(value) {
     return value
   }
 
-  return dateFormatter.format(parsed)
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'long',
+    timeStyle: 'short'
+  }).format(parsed)
 }
 
 export function normalizeAssetUrl(value, apiBaseUrl) {
@@ -33,13 +32,14 @@ export function normalizeAssetUrl(value, apiBaseUrl) {
   return `${base}${value.startsWith('/') ? value : `/${value}`}`
 }
 
-export function sessionPreview(event) {
+export function sessionPreview(event, locale = 'ru-RU') {
   const nextSession = [...(event?.sessions || [])]
     .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0]
 
   if (!nextSession) {
-    return 'Сеансы скоро появятся'
+    return locale.startsWith('en') ? 'Sessions coming soon' : 'Сеансы скоро появятся'
   }
 
-  return `${formatDateTime(nextSession.start_time)} · от ${formatMoney(nextSession.price)}`
+  const fromWord = locale.startsWith('en') ? 'from' : 'от'
+  return `${formatDateTime(nextSession.start_time, locale)} · ${fromWord} ${formatMoney(nextSession.price)}`
 }

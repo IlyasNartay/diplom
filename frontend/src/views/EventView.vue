@@ -7,10 +7,14 @@ import StatusBadge from '@/components/StatusBadge.vue'
 import { API_BASE_URL, api } from '@/lib/api'
 import { formatDateTime, formatMoney, normalizeAssetUrl } from '@/lib/format'
 import { useAuthStore } from '@/stores/auth'
+import { useLanguageStore } from '@/stores/language'
 import { useThemeStore } from '@/stores/theme'
 
 const auth = useAuthStore()
+const language = useLanguageStore()
 const theme = useThemeStore()
+
+const locale = computed(() => (language.isRussian.value ? 'ru-RU' : 'en-US'))
 const route = useRoute()
 const router = useRouter()
 
@@ -178,6 +182,7 @@ watch(selectedSessionId, () => {
 onMounted(async () => {
   auth.hydrate()
   theme.hydrate()
+  language.hydrate()
   await loadEvent()
 })
 </script>
@@ -254,7 +259,7 @@ onMounted(async () => {
           </label>
           <select v-model="selectedSessionId" :class="fieldClass">
             <option v-for="session in event.sessions" :key="session.id" :value="session.id">
-              {{ formatDateTime(session.start_time) }} · {{ session.hall_name }} · {{ formatMoney(session.price) }}
+              {{ formatDateTime(session.start_time, locale) }} · {{ session.hall_name }} · {{ formatMoney(session.price) }}
             </option>
           </select>
         </div>
@@ -273,7 +278,7 @@ onMounted(async () => {
           <div :class="theme.isDark.value ? 'mt-2 font-display text-xl text-white sm:text-2xl' : 'mt-2 font-display text-xl text-slate-900 sm:text-2xl'">
             {{ activeSession.hall_name }}
           </div>
-          <div :class="['mt-1 text-sm', mutedTextClass]">{{ formatDateTime(activeSession.start_time) }}</div>
+          <div :class="['mt-1 text-sm', mutedTextClass]">{{ formatDateTime(activeSession.start_time, locale) }}</div>
         </div>
       </div>
     </section>

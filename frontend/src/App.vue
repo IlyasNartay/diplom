@@ -6,13 +6,17 @@ import AppFooter from '@/components/AppFooter.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import InstallPrompt from '@/components/InstallPrompt.vue'
 import MobileDock from '@/components/MobileDock.vue'
+import { usePwaStore } from '@/stores/pwa'
 import { useThemeStore } from '@/stores/theme'
 
 const route = useRoute()
 const theme = useThemeStore()
+const pwa = usePwaStore()
 const isHome = computed(() => route.name === 'home')
 
 theme.hydrate()
+pwa.hydrate()
+pwa.bindInstallEvents()
 </script>
 
 <template>

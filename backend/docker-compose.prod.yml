@@ -1,0 +1,46 @@
+﻿services:
+  kafka-ui:
+    profiles: ["ops"]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: ticketon_nginx
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - api_gateway
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME:-_}
+      FRONTEND_UPSTREAM: frontend:80
+      API_UPSTREAM: api_gateway:8000
+    command: >
+      /bin/sh -c "
+      if [ -f /etc/nginx/certs/live/$$DOMAIN_NAME/fullchain.pem ] && [ -f /etc/nginx/certs/live/$$DOMAIN_NAME/privkey.pem ]; then
+        envsubst '$$DOMAIN_NAME $$FRONTEND_UPSTREAM $$API_UPSTREAM' < /etc/nginx/templates/https.conf.template > /etc/nginx/conf.d/default.conf;
+      else
+        envsubst '$$DOMAIN_NAME $$FRONTEND_UPSTREAM $$API_UPSTREAM' < /etc/nginx/templates/http.conf.template > /etc/nginx/conf.d/default.conf;
+      fi;
+      nginx -g 'daemon off;'
+      "
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/templates:/etc/nginx/templates:ro
+      - ./deploy/certs:/etc/nginx/certs
+      - ./deploy/certbot/www:/var/www/certbot
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: ticketon_certbot
+    profiles: ["certbot"]
+    volumes:
+      - ./deploy/certs:/etc/letsencrypt
+      - ./deploy/certbot/www:/var/www/certbot
+    entrypoint: /bin/sh -c
+    command: "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"

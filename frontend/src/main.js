@@ -6,8 +6,14 @@ import App from './App.vue'
 import router from './router'
 import './styles.css'
 
-registerSW({
-  immediate: true
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    updateSW(true)
+  },
+  onOfflineReady() {
+    console.info('HLTB PWA is ready for offline usage.')
+  }
 })
 
 const app = createApp(App)

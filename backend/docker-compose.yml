@@ -1,0 +1,247 @@
+# ==========================================
+# ⚓️ ANCHORS (SHARABLE CONFIGURATIONS)
+# ==========================================
+
+x-common-env: &common-env
+  KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  DATABASE_URL: postgresql+asyncpg://postgres:password@postgres:5432/ticketon_main_db
+  REDIS_URL: redis://redis:6379/0
+  TZ: Asia/Almaty
+
+x-app-service: &app-service
+  build:
+    context: .
+  restart: unless-stopped
+  env_file:
+    - .env
+  environment:
+    <<: *common-env
+  depends_on:
+    postgres:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+    kafka:
+      condition: service_healthy
+    redis:
+      condition: service_started
+    zookeeper:
+      condition: service_started
+
+# ==========================================
+# 🛠 SERVICES
+# ==========================================
+services:
+
+  # --- ZOOKEEPER ---
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ticketon_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_HEAP_OPTS: -Xmx256m -Xms128m
+
+  # --- KAFKA ---
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ticketon_kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_HEAP_OPTS: -Xmx512m -Xms256m
+
+    healthcheck:
+      test: nc -z localhost 9092 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # --- KAFKA UI ---
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: ticketon_kafka_ui
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+
+  # --- POSTGRES ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: ticketon_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ticketon_main_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- REDIS ---
+  redis:
+    image: redis:7-alpine
+    container_name: ticketon_redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    container_name: ticketon_migrate
+    restart: "no"
+    env_file:
+      - .env
+    environment:
+      <<: *common-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ==========================================
+  # 🚀 APPLICATION MICROSERVICES
+  # ==========================================
+
+  orchestrator:
+    <<: *app-service
+    container_name: ticketon_orchestrator
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/orchestrator
+        MODULE_NAME: services.orchestrator.main
+
+  seat_service:
+    <<: *app-service
+    container_name: ticketon_seat_service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/seat_service
+        MODULE_NAME: services.seat_service.main
+
+  order_service:
+    <<: *app-service
+    container_name: ticketon_order_service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/order_service
+        MODULE_NAME: services.order_service.main
+
+  payment_service:
+    <<: *app-service
+    container_name: ticketon_payment_service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/payment_service
+        MODULE_NAME: services.payment_service.main
+
+  ticket_service:
+    <<: *app-service
+    container_name: ticketon_ticket_service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/ticket_service
+        MODULE_NAME: services.ticket_service.main
+    environment:
+      <<: *common-env
+      TICKETS_MEDIA_ROOT: /app/data/tickets
+      # Ссылки в билетах: публичный origin шлюза (из .env). Пример на VPS: http://164.92.180.99:8080 или https://your-domain.kz
+      PUBLIC_TICKET_BASE_URL: ${PUBLIC_TICKET_BASE_URL:-http://localhost:8080}
+    volumes:
+      - ticket_pdfs:/app/data/tickets
+
+  catalog_service:
+    <<: *app-service
+    container_name: ticketon_catalog_service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/catalog_service
+        MODULE_NAME: services.catalog_service.main
+    environment:
+      <<: *common-env
+      MEDIA_ROOT: /app/data/media
+      # Тот же публичный origin, что и у билетов (см. PUBLIC_TICKET_BASE_URL в .env)
+      PUBLIC_MEDIA_BASE_URL: ${PUBLIC_TICKET_BASE_URL:-http://localhost:8080}
+    volumes:
+      - catalog_media:/app/data/media
+
+  auth_service:
+    <<: *app-service
+    container_name: ticketon_auth_service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/auth_service
+        MODULE_NAME: services.auth_service.main
+
+  api_gateway:
+    <<: *app-service
+    container_name: ticketon_api_gateway
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/api_gateway
+        MODULE_NAME: services.api_gateway.main
+    depends_on:
+      - auth_service
+      - catalog_service
+      - orchestrator
+      - ticket_service
+
+  analytics_service:
+    <<: *app-service
+    container_name: ticketon_analytics_service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_PATH: services/analytics_service
+        MODULE_NAME: services.analytics_service.main
+
+  frontend:
+    container_name: ticketon_frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+    restart: unless-stopped
+    depends_on:
+      - api_gateway
+
+volumes:
+  postgres_data:
+  catalog_media:
+  ticket_pdfs:

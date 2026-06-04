@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import { API_BASE_URL } from '@/lib/api'
 import { normalizeAssetUrl, sessionPreview } from '@/lib/format'
+import { useLanguageStore } from '@/stores/language'
 
 const props = defineProps({
   event: {
@@ -10,6 +11,17 @@ const props = defineProps({
     required: true
   }
 })
+
+const language = useLanguageStore()
+const locale = computed(() => (language.isRussian.value ? 'ru-RU' : 'en-US'))
+
+const cardFallbackDescription = computed(() =>
+  language.isRussian.value
+    ? 'Кураторский отбор университетских мероприятий, концертов и специальных событий.'
+    : 'A curated line-up of campus events, concerts, and special programmes.'
+)
+
+const detailsLabel = computed(() => (language.isRussian.value ? 'Подробнее' : 'Details'))
 
 const posterUrl = computed(() => normalizeAssetUrl(props.event.poster_url, API_BASE_URL))
 </script>
@@ -45,14 +57,14 @@ const posterUrl = computed(() => normalizeAssetUrl(props.event.poster_url, API_B
       </div>
 
       <p class="max-h-[4.5rem] overflow-hidden text-sm leading-6 text-sdu-mist/75">
-        {{ event.description || 'Кураторский отбор университетских мероприятий, концертов и специальных событий.' }}
+        {{ event.description || cardFallbackDescription }}
       </p>
 
       <div class="mt-auto flex flex-col items-start gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
         <div class="text-sm text-sdu-mist/80">
-          {{ sessionPreview(event) }}
+          {{ sessionPreview(event, locale) }}
         </div>
-        <span class="text-xs uppercase tracking-[0.22em] text-sdu-copper">Подробнее</span>
+        <span class="text-xs uppercase tracking-[0.22em] text-sdu-copper">{{ detailsLabel }}</span>
       </div>
     </div>
   </RouterLink>

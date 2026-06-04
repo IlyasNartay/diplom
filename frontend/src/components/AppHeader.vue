@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
 import { useLanguageStore } from '@/stores/language'
+import { usePwaStore } from '@/stores/pwa'
 import { useThemeStore } from '@/stores/theme'
 
 const auth = useAuthStore()
@@ -11,6 +12,7 @@ const route = useRoute()
 const router = useRouter()
 const theme = useThemeStore()
 const language = useLanguageStore()
+const pwa = usePwaStore()
 
 auth.hydrate()
 theme.hydrate()
@@ -89,6 +91,22 @@ function signOut() {
       </nav>
 
       <div class="flex shrink-0 items-center gap-2">
+        <button
+          v-if="!pwa.installed"
+          type="button"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition sm:h-11 sm:w-11"
+          :class="pwa.shouldShowInstallUi ? (theme.isDark.value ? 'border-sdu-copper/30 bg-sdu-copper/10 text-sdu-copper hover:bg-sdu-copper/20' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100') : (theme.isDark.value ? 'border-white/10 bg-white/5 text-slate-400 opacity-70' : 'border-slate-200 bg-white text-slate-400 opacity-70')"
+          :title="pwa.canShowIosInstallHint ? 'Use Share and Add to Home Screen on iPhone/iPad' : pwa.canShowInstallPrompt ? 'Add to home screen' : 'Open the site and install the app'"
+          :aria-label="pwa.canShowIosInstallHint ? 'Install app instructions for iOS' : pwa.canShowInstallPrompt ? 'Add to home screen' : 'Install app unavailable yet'"
+          @click="pwa.canShowInstallPrompt ? pwa.installApp() : null"
+        >
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path>
+            <path d="M12 3v11"></path>
+            <path d="m8 7 4-4 4 4"></path>
+          </svg>
+        </button>
+
         <button
           type="button"
           class="hidden h-10 w-10 items-center justify-center rounded-full border transition sm:inline-flex"

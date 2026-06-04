@@ -1,0 +1,38 @@
+# Alembic migrations (monorepo)
+
+Run from repo root **inside an app container** (not host `apt` alembic):
+
+```bash
+docker compose exec orchestrator alembic current
+docker compose exec orchestrator alembic upgrade head
+```
+
+Host `alembic` fails with `No module named pydantic_settings` — dependencies live in the image only.
+
+---
+
+## Legacy DB: tables exist, but `alembic_version` is empty
+
+Symptom: `DuplicateTableError: relation "audit_logs" already exists` on first `upgrade head`.
+
+The database was created earlier (`create_all` / manual SQL). Tell Alembic the baseline revision is already applied, then apply only newer migrations:
+
+```bash
+# 1) Mark initial schema as already applied (one time)
+docker compose exec orchestrator alembic stamp 532bd20467db
+
+# 2) Apply everything after that (outbox, multilang sync, constraints, …)
+docker compose exec orchestrator alembic upgrade head
+```
+
+If `outbox_events` **already exists** but stamp was never set, after `stamp 532bd20467db` the next `upgrade` may try to create `outbox_events` again. Then either:
+
+- `alembic stamp 8ca5a3b4a219` (if schema matches that revision), then `alembic upgrade head`, or
+- drop the duplicate table only if you are sure it is empty/wrong (not recommended on prod without backup).
+
+Check current revision:
+
+```bash
+docker compose exec orchestrator alembic current
+# or in psql: SELECT * FROM alembic_version;
+```

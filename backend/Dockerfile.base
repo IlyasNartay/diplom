@@ -1,0 +1,51 @@
+# Base stage for building and installing dependencies
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install build dependencies if needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+
+# Final stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONPATH=/app
+
+RUN apt-get update && apt-get install -y --no-install-recommends fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed dependencies from builder
+COPY --from=builder /install /usr/local
+
+# Copy common code
+COPY common /app/common
+
+# Copy all services (needed for Alembic migrations — env.py imports all models)
+COPY services /app/services
+
+# Copy Alembic migrations
+COPY alembic.ini /app/alembic.ini
+COPY migrations /app/migrations
+COPY scripts /app/scripts
+
+# Arguments to customize the service
+ARG SERVICE_PATH
+ARG MODULE_NAME
+
+# Command to run the service
+# Note: we use ENV to store ARGs so they are available at runtime
+ENV MODULE_NAME_ENV=${MODULE_NAME}
+ENTRYPOINT ["sh", "-c", "uvicorn ${MODULE_NAME_ENV}:app --host 0.0.0.0 --port 8000"]
