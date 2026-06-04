@@ -1,0 +1,29 @@
+# backend-fastapi/Dockerfile.prod
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y \
+    libpq-dev gcc libfreetype6-dev curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -r hfbs && useradd -r -g hfbs hfbs
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir gunicorn==21.2.0
+
+COPY . .
+
+RUN chown -R hfbs:hfbs /app
+USER hfbs
+
+EXPOSE 8001
+
+# Gunicorn запускает Uvicorn-воркеры — рекомендуемый способ для продакшна
+# (gunicorn управляет процессами, uvicorn обрабатывает async)
+CMD ["gunicorn", "main:app", \
+     "--bind", "0.0.0.0:8001", \
+     "--workers", "4", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--timeout", "30"]

@@ -1,0 +1,226 @@
+version: "3.9"
+
+# ============================================================
+# docker-compose.prod.yml — ПРОДАКШН конфигурация
+# Отличия от dev:
+#   - restart: unless-stopped (автоперезапуск)
+#   - Нет volume-маунтов кода (образы пересобираются)
+#   - Gunicorn вместо runserver / uvicorn --reload
+#   - Nginx как reverse proxy + SSL-терминация
+#   - Все секреты через переменные окружения
+#   - Healthcheck на всех сервисах
+# ============================================================
+
+services:
+
+  # ── Infrastructure ─────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: hfbs_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB:       ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # НЕ открываем порт наружу в продакшне!
+
+  redis:
+    image: redis:7-alpine
+    container_name: hfbs_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: hfbs_zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - backend
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: hfbs_kafka
+    restart: unless-stopped
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Внутри Docker-сети используем kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - backend
+
+  # ── Django (sync backend) ───────────────────────────────────
+
+  django:
+    image: ${REGISTRY}/hfbs-django:${TAG:-latest}
+    container_name: hfbs_django
+    restart: unless-stopped
+    # Gunicorn: 4 воркера × 2 треда = 8 параллельных запросов
+    command: >
+      gunicorn hfbs_django.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 4
+      --threads 2
+      --worker-class gthread
+      --timeout 30
+      --access-logfile -
+      --error-logfile -
+    environment:
+      SECRET_KEY:           ${DJANGO_SECRET_KEY}
+      DEBUG:                "False"
+      ALLOWED_HOSTS:        ${DOMAIN},www.${DOMAIN}
+      DATABASE_URL:         postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL:            redis://:${REDIS_PASSWORD}@redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SEAT_LOCK_TTL:        300
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    volumes:
+      - django_media:/app/media   # PDF билеты сохраняются здесь
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/events/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── FastAPI (async backend) ─────────────────────────────────
+
+  fastapi:
+    image: ${REGISTRY}/hfbs-fastapi:${TAG:-latest}
+    container_name: hfbs_fastapi
+    restart: unless-stopped
+    # Gunicorn управляет воркерами Uvicorn (рекомендуемый способ для продакшна)
+    command: >
+      gunicorn main:app
+      --bind 0.0.0.0:8001
+      --workers 4
+      --worker-class uvicorn.workers.UvicornWorker
+      --timeout 30
+      --access-logfile -
+      --error-logfile -
+    environment:
+      DATABASE_URL:              postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL:                 redis://:${REDIS_PASSWORD}@redis:6379/0
+      JWT_SECRET:                ${FASTAPI_JWT_SECRET}
+      KAFKA_BOOTSTRAP_SERVERS:   kafka:9092
+      SEAT_LOCK_TTL:             300
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    volumes:
+      - fastapi_media:/app/media
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Frontend (статика через Nginx) ──────────────────────────
+
+  frontend:
+    image: ${REGISTRY}/hfbs-frontend:${TAG:-latest}
+    container_name: hfbs_frontend
+    restart: unless-stopped
+    networks:
+      - frontend
+
+  # ── Nginx (reverse proxy + SSL) ────────────────────────────
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: hfbs_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_webroot:/var/www/certbot:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - django_media:/var/www/django_media:ro
+      - fastapi_media:/var/www/fastapi_media:ro
+    depends_on:
+      - django
+      - fastapi
+      - frontend
+    networks:
+      - backend
+      - frontend
+
+  # ── Certbot (Let's Encrypt SSL) ─────────────────────────────
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: hfbs_certbot
+    volumes:
+      - certbot_webroot:/var/www/certbot
+      - certbot_certs:/etc/letsencrypt
+    # Обновление сертификатов раз в 12 часов
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do
+        certbot renew --webroot -w /var/www/certbot --quiet;
+        sleep 12h & wait $${!};
+      done;"
+
+volumes:
+  postgres_data:
+  redis_data:
+  kafka_data:
+  zookeeper_data:
+  django_media:
+  fastapi_media:
+  certbot_webroot:
+  certbot_certs:
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge

@@ -1,0 +1,43 @@
+# backend-django/Dockerfile.prod
+# ══════════════════════════════════════════════════════════════
+# Production-ready Django образ:
+#   - Gunicorn вместо runserver
+#   - Non-root пользователь (безопасность)
+#   - collectstatic при сборке
+# ══════════════════════════════════════════════════════════════
+
+FROM python:3.11-slim
+
+# Системные зависимости
+RUN apt-get update && apt-get install -y \
+    libpq-dev gcc libfreetype6-dev curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создаём не-root пользователя
+RUN groupadd -r hfbs && useradd -r -g hfbs hfbs
+
+WORKDIR /app
+
+# Зависимости устанавливаем первыми (кэш Docker)
+COPY requirements.txt requirements.prod.txt* ./
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir gunicorn==21.2.0
+
+COPY . .
+
+# collectstatic
+ENV DJANGO_SETTINGS_MODULE=hfbs_django.settings
+RUN python manage.py collectstatic --noinput || true
+
+# Сменяем владельца
+RUN chown -R hfbs:hfbs /app
+USER hfbs
+
+EXPOSE 8000
+
+# Запуск Gunicorn (см. docker-compose.prod.yml для параметров)
+CMD ["gunicorn", "hfbs_django.wsgi:application", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", "--threads", "2", \
+     "--worker-class", "gthread", \
+     "--timeout", "30"]
