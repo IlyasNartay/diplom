@@ -62,16 +62,23 @@ export const usePwaStore = defineStore('pwa', () => {
   const dismissReason = ref('')
   const installed = ref(false)
   const listenersBound = ref(false)
+  const manualOpen = ref(false)
+  const installHint = ref('')
 
-  const canShowInstallPrompt = computed(() => canInstall.value && !dismissed.value && !installed.value)
   const isMobile = computed(() => isMobileViewport())
   const isIos = computed(() => isIosDevice())
   const isSafari = computed(() => isSafariBrowser())
   const canShowIosInstallHint = computed(
-    () => isIos.value && isSafari.value && !installed.value && !dismissed.value
+    () => isIos.value && isSafari.value && !installed.value
+  )
+  const canShowInstallPrompt = computed(
+    () => Boolean(deferredPrompt.value) && !installed.value
   )
   const shouldShowInstallUi = computed(
-    () => !installed.value && !dismissed.value && (canInstall.value || canShowIosInstallHint.value)
+    () =>
+      !installed.value &&
+      (manualOpen.value ||
+        (!dismissed.value && (canInstall.value || canShowIosInstallHint.value)))
   )
 
   function dismissTtl() {
@@ -116,14 +123,13 @@ export const usePwaStore = defineStore('pwa', () => {
     installed.value = true
     canInstall.value = false
     deferredPrompt.value = null
+    manualOpen.value = false
+    installHint.value = ''
     clearDismissState()
     persistFlag(PWA_INSTALLED_KEY, true)
   }
 
-  function onBeforeInstallPrompt(event) {
-    event.preventDefault()
-    deferredPrompt.value = event
-
+  function syncInstallAvailability() {
     if (installed.value) {
       canInstall.value = false
       return
@@ -133,9 +139,13 @@ export const usePwaStore = defineStore('pwa', () => {
       clearDismissState()
     }
 
-    if (!dismissed.value) {
-      canInstall.value = true
-    }
+    canInstall.value = Boolean(deferredPrompt.value) && !dismissed.value
+  }
+
+  function onBeforeInstallPrompt(event) {
+    event.preventDefault()
+    deferredPrompt.value = event
+    syncInstallAvailability()
   }
 
   function onAppInstalled() {
@@ -147,21 +157,19 @@ export const usePwaStore = defineStore('pwa', () => {
       return
     }
 
-    installed.value = isStandaloneMode() || window.localStorage.getItem(PWA_INSTALLED_KEY) === '1'
-    dismissedAt.value = Number(window.localStorage.getItem(PWA_DISMISSED_AT_KEY) || '0')
-    dismissReason.value = window.localStorage.getItem(PWA_DISMISS_REASON_KEY) || ''
-    dismissed.value = dismissedAt.value > 0
-
+    installed.value = isStandaloneMode()
     if (installed.value) {
+      persistFlag(PWA_INSTALLED_KEY, true)
       canInstall.value = false
       clearDismissState()
-      persistFlag(PWA_INSTALLED_KEY, true)
       return
     }
 
-    if (dismissed.value && isDismissExpired()) {
-      clearDismissState()
-    }
+    persistFlag(PWA_INSTALLED_KEY, false)
+    dismissedAt.value = Number(window.localStorage.getItem(PWA_DISMISSED_AT_KEY) || '0')
+    dismissReason.value = window.localStorage.getItem(PWA_DISMISS_REASON_KEY) || ''
+    dismissed.value = dismissedAt.value > 0
+    syncInstallAvailability()
   }
 
   function bindInstallEvents() {
@@ -170,6 +178,7 @@ export const usePwaStore = defineStore('pwa', () => {
     }
 
     listenersBound.value = true
+
     if (isStandaloneMode()) {
       markInstalled()
     }
@@ -179,29 +188,83 @@ export const usePwaStore = defineStore('pwa', () => {
   }
 
   async function installApp() {
-    if (!deferredPrompt.value) {
+    installHint.value = ''
+
+    if (installed.value) {
       return false
     }
 
-    deferredPrompt.value.prompt()
-    const choiceResult = await deferredPrompt.value.userChoice
-    const accepted = choiceResult?.outcome === 'accepted'
-
-    if (accepted) {
-      markInstalled()
-    } else {
-      dismissInstallPrompt('later')
+    if (!deferredPrompt.value) {
+      installHint.value =
+        'Браузер пока не предложил установку. Открой меню браузера и выбери «Установить приложение».'
+      manualOpen.value = true
+      return false
     }
 
-    return accepted
+    try {
+      await deferredPrompt.value.prompt()
+      const choiceResult = await deferredPrompt.value.userChoice
+      const accepted = choiceResult?.outcome === 'accepted'
+
+      if (accepted) {
+        markInstalled()
+      } else {
+        dismissInstallPrompt('later')
+      }
+
+      deferredPrompt.value = null
+      syncInstallAvailability()
+      return accepted
+    } catch {
+      installHint.value = 'Не удалось открыть диалог установки. Попробуй через меню браузера.'
+      manualOpen.value = true
+      return false
+    }
+  }
+
+  function openInstallUi() {
+    if (installed.value) {
+      return
+    }
+
+    installHint.value = ''
+    manualOpen.value = true
+
+    if (dismissed.value && isDismissExpired()) {
+      clearDismissState()
+    }
+
+    syncInstallAvailability()
+  }
+
+  function handleInstallAction() {
+    if (installed.value) {
+      return
+    }
+
+    openInstallUi()
+
+    if (canShowIosInstallHint.value) {
+      installHint.value = 'На iPhone/iPad: нажми Share, затем «Add to Home Screen».'
+      return
+    }
+
+    if (deferredPrompt.value) {
+      void installApp()
+      return
+    }
+
+    installHint.value =
+      'Установка появится в меню браузера (Chrome/Edge). Если кнопка не сработала — используй пункт «Установить приложение» в меню ⋮.'
   }
 
   function dismissInstallPrompt(reason = 'persistent') {
     dismissed.value = true
     dismissedAt.value = Date.now()
     dismissReason.value = reason
-    canInstall.value = false
-    deferredPrompt.value = null
+    manualOpen.value = false
+    installHint.value = ''
+    syncInstallAvailability()
     persistDismissState()
   }
 
@@ -212,8 +275,9 @@ export const usePwaStore = defineStore('pwa', () => {
   function resetInstallState() {
     clearDismissState()
     installed.value = false
-    canInstall.value = false
-    deferredPrompt.value = null
+    manualOpen.value = false
+    installHint.value = ''
+    syncInstallAvailability()
     persistFlag(PWA_INSTALLED_KEY, false)
   }
 
@@ -225,13 +289,17 @@ export const usePwaStore = defineStore('pwa', () => {
     dismissedAt,
     dismissReason,
     installed,
+    installHint,
     isMobile,
     isIos,
     isSafari,
+    manualOpen,
     shouldShowInstallUi,
     hydrate,
     bindInstallEvents,
     installApp,
+    openInstallUi,
+    handleInstallAction,
     dismissInstallPrompt,
     snoozeInstallPrompt,
     resetInstallState

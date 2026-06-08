@@ -6,6 +6,7 @@ import { formatDateTime, formatMoney } from '@/lib/format'
 import { useThemeStore } from '@/stores/theme'
 
 const theme = useThemeStore()
+const isDark = computed(() => theme.isDark)
 
 const categories = ref([])
 const cities = ref([])
@@ -68,26 +69,26 @@ const cityDrafts = reactive({})
 const sessionDrafts = reactive({})
 
 const panelClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-[2rem] border border-white/10 bg-white/5 shadow-glow backdrop-blur-xl'
     : 'rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]'
 )
 
 const panelSoftClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-[1.5rem] border border-white/10 bg-sdu-ink/70 shadow-copper'
     : 'rounded-[1.5rem] border border-slate-200 bg-slate-50 shadow-sm'
 )
 
-const textMutedClass = computed(() => (theme.isDark.value ? 'text-sdu-mist/75' : 'text-slate-600'))
-const headingClass = computed(() => (theme.isDark.value ? 'text-white' : 'text-slate-900'))
+const textMutedClass = computed(() => (isDark.value ? 'text-sdu-mist/75' : 'text-slate-600'))
+const headingClass = computed(() => (isDark.value ? 'text-white' : 'text-slate-900'))
 const metricCardClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-[1.3rem] border border-white/10 bg-white/5 p-4'
     : 'rounded-[1.3rem] border border-slate-200 bg-white p-4'
 )
 const chipButtonClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-sdu-mist/80 transition hover:bg-white/10'
     : 'rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 transition hover:bg-slate-100'
 )
@@ -574,11 +575,11 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <div v-if="message" :class="[panelClass, theme.isDark.value ? 'p-5 text-sm text-emerald-200' : 'p-5 text-sm text-emerald-700']">
+    <div v-if="message" :class="[panelClass, isDark ? 'p-5 text-sm text-emerald-200' : 'p-5 text-sm text-emerald-700']">
       {{ message }}
     </div>
 
-    <div v-if="error" :class="[panelClass, theme.isDark.value ? 'p-5 text-sm text-rose-200' : 'p-5 text-sm text-rose-700']">
+    <div v-if="error" :class="[panelClass, isDark ? 'p-5 text-sm text-rose-200' : 'p-5 text-sm text-rose-700']">
       {{ error }}
     </div>
 
@@ -586,7 +587,12 @@ onBeforeUnmount(() => {
       <div
         v-for="index in 3"
         :key="index"
-        class="h-40 animate-shimmer rounded-[2rem] bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))] bg-[length:200%_100%]"
+        class="h-40 animate-shimmer rounded-[2rem] bg-[length:200%_100%]"
+        :class="
+          isDark
+            ? 'bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))]'
+            : 'bg-[linear-gradient(90deg,rgba(241,245,249,1),rgba(255,255,255,1),rgba(241,245,249,1))]'
+        "
       ></div>
     </div>
 
@@ -653,7 +659,7 @@ onBeforeUnmount(() => {
               :class="[
                 chipButtonClass,
                 selectedEventId === event.id
-                  ? theme.isDark.value
+                  ? isDark
                     ? 'border-sdu-copper/45 bg-sdu-copper/10 text-white'
                     : 'border-slate-900 bg-slate-900 text-white'
                   : ''
@@ -667,7 +673,7 @@ onBeforeUnmount(() => {
           <div
             v-if="!filteredEvents.length"
             class="mt-5 rounded-[1.25rem] border border-dashed px-4 py-5 text-sm"
-            :class="theme.isDark.value ? 'border-white/10 text-sdu-mist/70' : 'border-slate-300 text-slate-500'"
+            :class="isDark ? 'border-white/10 text-sdu-mist/70' : 'border-slate-300 text-slate-500'"
           >
             По текущим фильтрам событий не найдено.
           </div>
@@ -737,7 +743,7 @@ onBeforeUnmount(() => {
                 <input type="file" accept="image/*" class="field mt-3" @change="onCreatePosterChange" />
                 <div
                   class="mt-4 flex h-48 items-center justify-center overflow-hidden rounded-[1.25rem] border border-dashed"
-                  :class="theme.isDark.value ? 'border-white/15 bg-white/5' : 'border-slate-300 bg-white'"
+                  :class="isDark ? 'border-white/15 bg-white/5' : 'border-slate-300 bg-white'"
                 >
                   <img
                     v-if="createPosterPreviewUrl"
@@ -825,7 +831,7 @@ onBeforeUnmount(() => {
                 <div class="text-xs uppercase tracking-[0.22em] text-sdu-copper/75">Постер события</div>
                 <div
                   class="mt-3 flex h-56 items-center justify-center overflow-hidden rounded-[1.25rem] border border-dashed"
-                  :class="theme.isDark.value ? 'border-white/15 bg-white/5' : 'border-slate-300 bg-white'"
+                  :class="isDark ? 'border-white/15 bg-white/5' : 'border-slate-300 bg-white'"
                 >
                   <img
                     v-if="selectedEventPoster"

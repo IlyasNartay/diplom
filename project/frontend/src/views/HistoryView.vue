@@ -3,14 +3,14 @@ import { computed, onMounted, ref } from 'vue'
 
 import StatusBadge from '@/components/StatusBadge.vue'
 import { API_BASE_URL, api } from '@/lib/api'
-import { formatDateTime, normalizeAssetUrl } from '@/lib/format'
+import { formatDateTime, normalizeAssetUrl, resolveTicketUrl } from '@/lib/format'
 import { useLanguageStore } from '@/stores/language'
 import { useThemeStore } from '@/stores/theme'
 
 const language = useLanguageStore()
 const theme = useThemeStore()
 
-const isDark = computed(() => theme.isDark.value)
+const isDark = computed(() => theme.isDark)
 
 const history = ref([])
 const loading = ref(true)
@@ -59,72 +59,80 @@ const t = computed(() => {
 })
 
 const pageClass = computed(() =>
-  theme.isDark.value ? 'space-y-6 text-white' : 'space-y-6 text-slate-900'
+  theme.isDark ? 'space-y-6 text-white' : 'space-y-6 text-slate-900'
 )
 
 const eyebrowClass = computed(() =>
-  theme.isDark.value ? 'eyebrow' : 'text-xs uppercase tracking-[0.34em] text-emerald-700'
+  theme.isDark ? 'eyebrow' : 'text-xs uppercase tracking-[0.34em] text-emerald-700'
 )
 
 const introClass = computed(() =>
-  theme.isDark.value ? 'mt-4 max-w-2xl text-sm leading-7 text-sdu-mist/75' : 'mt-4 max-w-2xl text-sm leading-7 text-slate-600'
+  theme.isDark ? 'mt-4 max-w-2xl text-sm leading-7 text-sdu-mist/75' : 'mt-4 max-w-2xl text-sm leading-7 text-slate-600'
 )
 
 const titleClass = computed(() =>
-  theme.isDark.value
+  theme.isDark
     ? 'mt-3 font-display text-3xl text-white sm:text-4xl'
     : 'mt-3 font-display text-3xl text-slate-900 sm:text-4xl'
 )
 
 const panelClass = computed(() =>
-  theme.isDark.value
+  theme.isDark
     ? 'panel'
     : 'rounded-[2rem] border border-slate-200 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.08)]'
 )
 
 const errorPanelClass = computed(() =>
-  theme.isDark.value ? 'panel p-5 text-sm text-rose-200' : 'rounded-[2rem] border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800'
+  theme.isDark ? 'panel p-5 text-sm text-rose-200' : 'rounded-[2rem] border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800'
 )
 
 const shimmerClass = computed(() =>
-  theme.isDark.value
+  theme.isDark
     ? 'panel h-40 animate-shimmer bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))] bg-[length:200%_100%]'
     : 'h-40 rounded-[2rem] border border-slate-200 bg-[linear-gradient(90deg,rgba(241,245,249,1),rgba(255,255,255,1),rgba(241,245,249,1))] bg-[length:200%_100%] animate-shimmer'
 )
 
 const articleTitleClass = computed(() =>
-  theme.isDark.value
+  theme.isDark
     ? 'mt-4 font-display text-2xl text-white sm:text-3xl'
     : 'mt-4 font-display text-2xl text-slate-900 sm:text-3xl'
 )
 
 const metaClass = computed(() =>
-  theme.isDark.value ? 'mt-3 break-all text-sm leading-7 text-sdu-mist/75' : 'mt-3 break-all text-sm leading-7 text-slate-600'
+  theme.isDark ? 'mt-3 break-all text-sm leading-7 text-sdu-mist/75' : 'mt-3 break-all text-sm leading-7 text-slate-600'
 )
 
 const seatChipClass = computed(() =>
-  theme.isDark.value
+  theme.isDark
     ? 'rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-sdu-mist/80'
     : 'rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600'
 )
 
 const sideCardClass = computed(() =>
-  theme.isDark.value
+  theme.isDark
     ? 'flex flex-col justify-between gap-4 rounded-[1.35rem] border border-white/10 bg-white/5 p-4 sm:rounded-[1.6rem] sm:p-5'
     : 'flex flex-col justify-between gap-4 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:rounded-[1.6rem] sm:p-5'
 )
 
 const sideHeadingClass = computed(() =>
-  theme.isDark.value ? 'text-xs uppercase tracking-[0.22em] text-sdu-copper/75' : 'text-xs uppercase tracking-[0.22em] text-sdu-royal'
+  theme.isDark ? 'text-xs uppercase tracking-[0.22em] text-sdu-copper/75' : 'text-xs uppercase tracking-[0.22em] text-sdu-royal'
 )
 
 const sideBodyClass = computed(() =>
-  theme.isDark.value ? 'mt-3 space-y-2 text-sm text-sdu-mist/75' : 'mt-3 space-y-2 text-sm text-slate-600'
+  theme.isDark ? 'mt-3 space-y-2 text-sm text-sdu-mist/75' : 'mt-3 space-y-2 text-sm text-slate-600'
 )
 
 const dateMetaClass = computed(() =>
-  theme.isDark.value ? 'text-xs uppercase tracking-[0.2em] text-sdu-mist/60' : 'text-xs uppercase tracking-[0.2em] text-slate-500'
+  theme.isDark ? 'text-xs uppercase tracking-[0.2em] text-sdu-mist/60' : 'text-xs uppercase tracking-[0.2em] text-slate-500'
 )
+
+function ticketHref(booking) {
+  return normalizeAssetUrl(resolveTicketUrl(booking), API_BASE_URL)
+}
+
+function canDownloadTicket(booking) {
+  return Boolean(resolveTicketUrl(booking))
+}
 
 async function loadHistory() {
   loading.value = true
@@ -212,26 +220,25 @@ onMounted(() => {
           <p v-if="booking.error_reason" :class="isDark ? 'mt-4 text-sm text-rose-200' : 'mt-4 text-sm text-rose-700'">
             {{ booking.error_reason }}
           </p>
-        </div>
-
-        <div :class="sideCardClass">
-          <div>
-            <div :class="sideHeadingClass">{{ t.eventState }}</div>
-            <div :class="sideBodyClass">
-              <div>{{ t.active }}: {{ booking.event_is_active ? t.yes : t.no }}</div>
-              <div>{{ t.sessionPassed }}: {{ booking.session_has_passed ? t.yes : t.no }}</div>
-            </div>
-          </div>
 
           <a
-            v-if="booking.ticket_url"
-            class="btn-secondary w-full"
-            :href="normalizeAssetUrl(booking.ticket_url, API_BASE_URL)"
-            :download="`${booking.booking_id}.pdf`"
+            v-if="canDownloadTicket(booking)"
+            class="btn-primary mt-5 inline-flex w-full sm:w-auto"
+            :href="ticketHref(booking)"
+            target="_blank"
             rel="noopener noreferrer"
+            :download="`${booking.booking_id}.pdf`"
           >
             {{ t.openTicket }}
           </a>
+        </div>
+
+        <div :class="sideCardClass">
+          <div :class="sideHeadingClass">{{ t.eventState }}</div>
+          <div :class="sideBodyClass">
+            <div>{{ t.active }}: {{ booking.event_is_active ? t.yes : t.no }}</div>
+            <div>{{ t.sessionPassed }}: {{ booking.session_has_passed ? t.yes : t.no }}</div>
+          </div>
         </div>
       </article>
     </div>

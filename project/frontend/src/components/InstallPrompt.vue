@@ -29,7 +29,10 @@ const pwa = usePwaStore()
             <div class="min-w-0 flex-1">
               <div class="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-sdu-copper/80">PWA</div>
               <div class="mt-1 text-lg font-semibold text-white">Install HLTB</div>
-              <p v-if="!pwa.canShowIosInstallHint" class="mt-1 text-sm leading-6 text-sdu-mist/80">
+              <p v-if="pwa.installHint" class="mt-1 text-sm leading-6 text-amber-100">
+                {{ pwa.installHint }}
+              </p>
+              <p v-else-if="!pwa.canShowIosInstallHint" class="mt-1 text-sm leading-6 text-sdu-mist/80">
                 Добавь на домашний экран для быстрого доступа к афише и билетам.
               </p>
               <p v-else class="mt-1 text-sm leading-6 text-sdu-mist/80">
@@ -51,19 +54,21 @@ const pwa = usePwaStore()
           </div>
 
           <div class="mt-4 flex gap-2">
-            <button class="btn-secondary flex-1 px-4 py-2.5 text-sm" @click.stop="pwa.snoozeInstallPrompt()">
+            <button type="button" class="btn-secondary flex-1 px-4 py-2.5 text-sm" @click.stop="pwa.snoozeInstallPrompt()">
               Позже
             </button>
             <button
               v-if="!pwa.canShowIosInstallHint"
+              type="button"
               class="btn-primary flex-1 px-4 py-2.5 text-sm"
               data-install-pwa
-              @click="pwa.installApp()"
+              @click.stop="pwa.handleInstallAction()"
             >
               Установить
             </button>
             <button
               v-else
+              type="button"
               class="btn-primary flex-1 px-4 py-2.5 text-sm"
               @click.stop="pwa.dismissInstallPrompt('persistent')"
             >

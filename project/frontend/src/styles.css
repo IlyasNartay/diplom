@@ -9,6 +9,12 @@
   color: #f8eee6;
 }
 
+:root.theme-light {
+  color-scheme: light;
+  background: #f6f7fb;
+  color: #0f172a;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -21,6 +27,11 @@ body {
     radial-gradient(circle at top, rgba(44, 50, 121, 0.36), transparent 36%),
     linear-gradient(180deg, #090b18 0%, #0d102d 100%);
   color: #f8eee6;
+}
+
+:root.theme-light body {
+  background: linear-gradient(180deg, #f6f7fb 0%, #eef2f7 100%);
+  color: #0f172a;
 }
 
 a {
@@ -82,8 +93,36 @@ textarea {
     @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10;
   }
 
+  .theme-light .btn-secondary {
+    @apply border-slate-200 bg-white text-slate-700 hover:bg-slate-100;
+  }
+
+  select.field option {
+    @apply bg-sdu-ink text-white;
+  }
+
+  .theme-light select.field option {
+    @apply bg-white text-slate-900;
+  }
+
   .eyebrow {
     @apply text-xs uppercase tracking-[0.34em] text-sdu-copper/80;
+  }
+
+  .theme-light .panel {
+    @apply border-slate-200 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.08)];
+  }
+
+  .theme-light .panel-soft {
+    @apply border-slate-200 bg-slate-50 shadow-sm;
+  }
+
+  .theme-light .field {
+    @apply border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sdu-copper/70 focus:bg-white;
+  }
+
+  .theme-light .eyebrow {
+    @apply text-emerald-700;
   }
 
   .headline {

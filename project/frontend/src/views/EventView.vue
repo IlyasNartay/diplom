@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import SeatGrid from '@/components/SeatGrid.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import { API_BASE_URL, api } from '@/lib/api'
-import { formatDateTime, formatMoney, normalizeAssetUrl } from '@/lib/format'
+import { formatDateTime, formatMoney, normalizeAssetUrl, resolveTicketUrl } from '@/lib/format'
 import { useAuthStore } from '@/stores/auth'
 import { useLanguageStore } from '@/stores/language'
 import { useThemeStore } from '@/stores/theme'
@@ -13,6 +13,7 @@ import { useThemeStore } from '@/stores/theme'
 const auth = useAuthStore()
 const language = useLanguageStore()
 const theme = useThemeStore()
+const isDark = computed(() => theme.isDark)
 
 const locale = computed(() => (language.isRussian.value ? 'ru-RU' : 'en-US'))
 const route = useRoute()
@@ -43,50 +44,50 @@ const totalPrice = computed(() =>
 const posterUrl = computed(() => normalizeAssetUrl(event.value?.poster_url || '', API_BASE_URL))
 
 const pageClass = computed(() =>
-  theme.isDark.value ? 'space-y-6 sm:space-y-8 text-white' : 'space-y-6 sm:space-y-8 text-slate-900'
+  isDark.value ? 'space-y-6 sm:space-y-8 text-white' : 'space-y-6 sm:space-y-8 text-slate-900'
 )
 
 const heroPanelClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-glow backdrop-blur-xl'
     : 'overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.08)]'
 )
 
 const detailPanelClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-glow backdrop-blur-xl sm:p-8 lg:p-10'
     : 'rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_90px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10'
 )
 
 const sectionPanelClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-[2rem] border border-white/10 bg-white/5 p-4 shadow-glow backdrop-blur-xl sm:p-6 lg:p-8'
     : 'rounded-[2rem] border border-slate-200 bg-white p-4 shadow-[0_28px_90px_rgba(15,23,42,0.08)] sm:p-6 lg:p-8'
 )
 
 const softPanelClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-[1.5rem] border border-white/10 bg-sdu-ink/70 p-4 shadow-copper backdrop-blur-xl'
     : 'rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 shadow-sm'
 )
 
 const fieldClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'field'
     : 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-sdu-copper/70 focus:bg-white'
 )
 
-const mutedTextClass = computed(() => (theme.isDark.value ? 'text-sdu-mist/75' : 'text-slate-600'))
-const subTextClass = computed(() => (theme.isDark.value ? 'text-sdu-mist/65' : 'text-slate-500'))
-const labelClass = computed(() => (theme.isDark.value ? 'text-sdu-copper/75' : 'text-sdu-royal'))
-const seatLegendClass = computed(() => (theme.isDark.value ? 'text-sdu-mist/70' : 'text-slate-600'))
+const mutedTextClass = computed(() => (isDark.value ? 'text-sdu-mist/75' : 'text-slate-600'))
+const subTextClass = computed(() => (isDark.value ? 'text-sdu-mist/65' : 'text-slate-500'))
+const labelClass = computed(() => (isDark.value ? 'text-sdu-copper/75' : 'text-sdu-royal'))
+const seatLegendClass = computed(() => (isDark.value ? 'text-sdu-mist/70' : 'text-slate-600'))
 const selectedChipClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-white'
     : 'rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700'
 )
 const bottomCheckoutClass = computed(() =>
-  theme.isDark.value
+  isDark.value
     ? 'fixed inset-x-4 bottom-[5.9rem] z-40 rounded-[1.35rem] border border-white/10 bg-sdu-ink/95 p-4 shadow-glow backdrop-blur-2xl md:hidden'
     : 'fixed inset-x-4 bottom-[5.9rem] z-40 rounded-[1.35rem] border border-slate-200 bg-white/95 p-4 shadow-[0_22px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl md:hidden'
 )
@@ -191,14 +192,14 @@ onMounted(async () => {
   <div v-if="loading" :class="pageClass">
     <div
       :class="
-        theme.isDark.value
+        isDark
           ? 'h-[28rem] rounded-[2rem] border border-white/10 bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))] bg-[length:200%_100%] animate-shimmer'
           : 'h-[28rem] rounded-[2rem] border border-slate-200 bg-[linear-gradient(90deg,rgba(255,255,255,0.65),rgba(241,245,249,1),rgba(255,255,255,0.65))] bg-[length:200%_100%] animate-shimmer'
       "
     ></div>
   </div>
 
-  <div v-else-if="error && !event" :class="[sectionPanelClass, theme.isDark.value ? 'text-rose-200' : 'text-rose-700']">
+  <div v-else-if="error && !event" :class="[sectionPanelClass, isDark ? 'text-rose-200' : 'text-rose-700']">
     {{ error }}
   </div>
 
@@ -214,7 +215,7 @@ onMounted(async () => {
         <div
           v-else
           :class="
-            theme.isDark.value
+            isDark
               ? 'flex min-h-[16rem] items-end bg-[linear-gradient(160deg,rgba(44,50,121,0.95),rgba(9,11,24,1))] p-5 sm:min-h-[22rem] sm:p-8'
               : 'flex min-h-[16rem] items-end bg-[linear-gradient(160deg,rgba(30,41,59,0.98),rgba(15,23,42,1))] p-5 sm:min-h-[22rem] sm:p-8'
           "
@@ -225,7 +226,7 @@ onMounted(async () => {
 
       <div :class="detailPanelClass">
         <div class="eyebrow">{{ event.category?.name_en || event.category?.name_ru || 'Event' }}</div>
-        <h1 :class="theme.isDark.value ? 'mt-4 font-display text-3xl text-white sm:text-5xl' : 'mt-4 font-display text-3xl text-slate-900 sm:text-5xl'">
+        <h1 :class="isDark ? 'mt-4 font-display text-3xl text-white sm:text-5xl' : 'mt-4 font-display text-3xl text-slate-900 sm:text-5xl'">
           {{ event.title }}
         </h1>
         <p :class="['mt-4 text-sm leading-7 sm:mt-6 sm:text-base sm:leading-8', mutedTextClass]">
@@ -238,13 +239,13 @@ onMounted(async () => {
         <div class="mt-5 grid gap-3 sm:mt-7 sm:grid-cols-2 sm:gap-4">
           <div :class="softPanelClass">
             <div class="text-xs uppercase tracking-[0.22em]" :class="labelClass">Город</div>
-            <div :class="theme.isDark.value ? 'mt-2 text-base text-white sm:text-lg' : 'mt-2 text-base text-slate-900 sm:text-lg'">
+            <div :class="isDark ? 'mt-2 text-base text-white sm:text-lg' : 'mt-2 text-base text-slate-900 sm:text-lg'">
               {{ event.city?.name_ru || event.city?.name_en || '—' }}
             </div>
           </div>
           <div :class="softPanelClass">
             <div class="text-xs uppercase tracking-[0.22em]" :class="labelClass">Сеансов</div>
-            <div :class="theme.isDark.value ? 'mt-2 text-base text-white sm:text-lg' : 'mt-2 text-base text-slate-900 sm:text-lg'">
+            <div :class="isDark ? 'mt-2 text-base text-white sm:text-lg' : 'mt-2 text-base text-slate-900 sm:text-lg'">
               {{ event.sessions?.length || 0 }}
             </div>
           </div>
@@ -253,7 +254,7 @@ onMounted(async () => {
         <div class="mt-6 sm:mt-8">
           <label
             class="mb-2 block text-xs uppercase tracking-[0.24em]"
-            :class="theme.isDark.value ? 'text-sdu-mist/65' : 'text-slate-500'"
+            :class="isDark ? 'text-sdu-mist/65' : 'text-slate-500'"
           >
             Выбери сеанс
           </label>
@@ -267,15 +268,15 @@ onMounted(async () => {
         <div
           v-if="activeSession"
           :class="
-            theme.isDark.value
+            isDark
               ? 'mt-5 rounded-[1.4rem] border border-sdu-copper/20 bg-sdu-copper/10 p-4 sm:mt-6 sm:rounded-[1.75rem] sm:p-5'
               : 'mt-5 rounded-[1.4rem] border border-amber-200 bg-amber-50 p-4 sm:mt-6 sm:rounded-[1.75rem] sm:p-5'
           "
         >
-          <div class="text-xs uppercase tracking-[0.24em]" :class="theme.isDark.value ? 'text-sdu-copper/80' : 'text-sdu-royal'">
+          <div class="text-xs uppercase tracking-[0.24em]" :class="isDark ? 'text-sdu-copper/80' : 'text-sdu-royal'">
             Активный сеанс
           </div>
-          <div :class="theme.isDark.value ? 'mt-2 font-display text-xl text-white sm:text-2xl' : 'mt-2 font-display text-xl text-slate-900 sm:text-2xl'">
+          <div :class="isDark ? 'mt-2 font-display text-xl text-white sm:text-2xl' : 'mt-2 font-display text-xl text-slate-900 sm:text-2xl'">
             {{ activeSession.hall_name }}
           </div>
           <div :class="['mt-1 text-sm', mutedTextClass]">{{ formatDateTime(activeSession.start_time, locale) }}</div>
@@ -288,7 +289,7 @@ onMounted(async () => {
         <div class="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div class="eyebrow">Seat Selection</div>
-            <h2 :class="theme.isDark.value ? 'mt-2 font-display text-2xl text-white sm:text-4xl' : 'mt-2 font-display text-2xl text-slate-900 sm:text-4xl'">
+            <h2 :class="isDark ? 'mt-2 font-display text-2xl text-white sm:text-4xl' : 'mt-2 font-display text-2xl text-slate-900 sm:text-4xl'">
               Выбор мест
             </h2>
           </div>
@@ -312,24 +313,24 @@ onMounted(async () => {
       <aside class="space-y-4 sm:space-y-6">
         <div :class="sectionPanelClass">
           <div class="eyebrow">Checkout</div>
-          <h3 :class="theme.isDark.value ? 'mt-2 font-display text-2xl text-white sm:text-3xl' : 'mt-2 font-display text-2xl text-slate-900 sm:text-3xl'">
+          <h3 :class="isDark ? 'mt-2 font-display text-2xl text-white sm:text-3xl' : 'mt-2 font-display text-2xl text-slate-900 sm:text-3xl'">
             Подтверждение
           </h3>
 
           <div class="mt-5 space-y-3">
             <div :class="['flex items-center justify-between text-sm', mutedTextClass]">
               <span>Выбрано мест</span>
-              <span :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">{{ selectedSeatIds.length }}</span>
+              <span :class="isDark ? 'text-white' : 'text-slate-900'">{{ selectedSeatIds.length }}</span>
             </div>
             <div :class="['flex items-center justify-between text-sm', mutedTextClass]">
               <span>Сумма</span>
-              <span :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">{{ formatMoney(totalPrice) }}</span>
+              <span :class="isDark ? 'text-white' : 'text-slate-900'">{{ formatMoney(totalPrice) }}</span>
             </div>
           </div>
 
           <div
             v-if="selectedSeats.length"
-            :class="theme.isDark.value ? 'mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-4' : 'mt-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4'"
+            :class="isDark ? 'mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-4' : 'mt-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4'"
           >
             <div class="text-xs uppercase tracking-[0.22em]" :class="labelClass">Места</div>
             <div class="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
@@ -358,7 +359,7 @@ onMounted(async () => {
 
         <div
           v-if="error"
-          :class="theme.isDark.value ? 'panel p-5 text-sm text-rose-200' : 'rounded-[2rem] border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700'"
+          :class="isDark ? 'panel p-5 text-sm text-rose-200' : 'rounded-[2rem] border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700'"
         >
           {{ error }}
         </div>
@@ -367,23 +368,24 @@ onMounted(async () => {
           <div class="flex items-center justify-between gap-4">
             <div>
               <div class="text-xs uppercase tracking-[0.22em]" :class="labelClass">Статус бронирования</div>
-              <div :class="theme.isDark.value ? 'mt-2 font-display text-xl text-white sm:text-2xl' : 'mt-2 font-display text-xl text-slate-900 sm:text-2xl'">
+              <div :class="isDark ? 'mt-2 font-display text-xl text-white sm:text-2xl' : 'mt-2 font-display text-xl text-slate-900 sm:text-2xl'">
                 Booking #{{ bookingStatus.booking_id }}
               </div>
             </div>
             <StatusBadge :status="bookingStatus.status" />
           </div>
 
-          <p v-if="bookingStatus.error_reason" :class="['mt-4 text-sm', theme.isDark.value ? 'text-rose-200' : 'text-rose-700']">
+          <p v-if="bookingStatus.error_reason" :class="['mt-4 text-sm', isDark ? 'text-rose-200' : 'text-rose-700']">
             {{ bookingStatus.error_reason }}
           </p>
 
           <a
-            v-if="bookingStatus.ticket_url"
-            class="btn-secondary mt-5 w-full"
-            :href="normalizeAssetUrl(bookingStatus.ticket_url, API_BASE_URL)"
+            v-if="resolveTicketUrl(bookingStatus)"
+            class="btn-primary mt-5 w-full"
+            :href="normalizeAssetUrl(resolveTicketUrl(bookingStatus), API_BASE_URL)"
             target="_blank"
             rel="noreferrer"
+            :download="`${bookingStatus.booking_id}.pdf`"
           >
             Открыть билет
           </a>
@@ -395,7 +397,7 @@ onMounted(async () => {
       <div class="flex items-center justify-between gap-4">
         <div>
           <div class="text-[0.68rem] uppercase tracking-[0.2em]" :class="labelClass">Mobile checkout</div>
-          <div :class="['mt-1 text-sm', theme.isDark.value ? 'text-white' : 'text-slate-900']">
+          <div :class="['mt-1 text-sm', isDark ? 'text-white' : 'text-slate-900']">
             {{ selectedSeatIds.length }} seats · {{ formatMoney(totalPrice) }}
           </div>
         </div>

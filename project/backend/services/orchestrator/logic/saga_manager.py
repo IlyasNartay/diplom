@@ -110,6 +110,17 @@ def _event_fields_for_first_seat(
     return event_title, event_is_active, session_has_passed
 
 
+def _normalize_ticket_url(ticket_url: str | None) -> str | None:
+    if not ticket_url:
+        return None
+
+    cleaned = ticket_url.strip()
+    if not cleaned or cleaned == "No tickets":
+        return None
+
+    return cleaned
+
+
 async def get_booking_status(booking_id: uuid.UUID, db_session) -> BookingStatus:
     result = await db_session.execute(select(BookingSaga).where(BookingSaga.id == booking_id))
     saga = result.scalar_one_or_none()
@@ -130,7 +141,7 @@ async def get_booking_status(booking_id: uuid.UUID, db_session) -> BookingStatus
         booking_id=saga.id,
         status=saga.status.value,
         seat_ids=saga.seat_ids,
-        ticket_url=saga.ticket_url if saga.ticket_url else None,
+        ticket_url=_normalize_ticket_url(saga.ticket_url),
         error_reason=saga.error_reason,
         event_title=event_title,
         event_is_active=event_is_active,
@@ -168,7 +179,7 @@ async def get_my_history(x_user_id: uuid.UUID, db_session) -> list[dict]:
                 "booking_id": saga.id,
                 "seat_ids": saga.seat_ids,
                 "status": saga.status.value,
-                "ticket_url": saga.ticket_url,
+                "ticket_url": _normalize_ticket_url(saga.ticket_url),
                 "created_at": saga.created_at,
                 "error_reason": saga.error_reason,
                 "event_title": event_title,

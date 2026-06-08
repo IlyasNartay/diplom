@@ -32,6 +32,24 @@ export function normalizeAssetUrl(value, apiBaseUrl) {
   return `${base}${value.startsWith('/') ? value : `/${value}`}`
 }
 
+export function resolveTicketUrl(booking) {
+  const bookingId = booking?.booking_id
+  const raw = (booking?.ticket_url || '').trim()
+
+  if (raw && raw !== 'No tickets') {
+    const candidate = raw.split(',')[0].trim()
+    if (candidate.includes('.pdf') || candidate.includes('/tickets/')) {
+      return candidate
+    }
+  }
+
+  if (booking?.status === 'completed' && bookingId) {
+    return `/tickets/${bookingId}.pdf`
+  }
+
+  return ''
+}
+
 export function sessionPreview(event, locale = 'ru-RU') {
   const nextSession = [...(event?.sessions || [])]
     .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0]

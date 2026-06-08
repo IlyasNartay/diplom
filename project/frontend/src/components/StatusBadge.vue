@@ -44,43 +44,43 @@ const view = computed(() => {
   const map = {
     completed: {
       label: L.completed,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
         : 'border-emerald-200 bg-emerald-50 text-emerald-700'
     },
     payment_failed: {
       label: L.payment_failed,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-rose-400/30 bg-rose-400/10 text-rose-200'
         : 'border-rose-200 bg-rose-50 text-rose-700'
     },
     payment_pending: {
       label: L.payment_pending,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-amber-300/30 bg-amber-300/10 text-amber-100'
         : 'border-amber-200 bg-amber-50 text-amber-700'
     },
     seat_reserved: {
       label: L.seat_reserved,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-sky-400/30 bg-sky-400/10 text-sky-200'
         : 'border-sky-200 bg-sky-50 text-sky-700'
     },
     seat_reservation_failed: {
       label: L.seat_reservation_failed,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-rose-400/30 bg-rose-400/10 text-rose-200'
         : 'border-rose-200 bg-rose-50 text-rose-700'
     },
     payment_success: {
       label: L.payment_success,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
         : 'border-emerald-200 bg-emerald-50 text-emerald-700'
     },
     started: {
       label: L.started,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-white/15 bg-white/10 text-white'
         : 'border-slate-200 bg-slate-50 text-slate-700'
     }
@@ -89,7 +89,7 @@ const view = computed(() => {
   return (
     map[props.status] || {
       label: props.status || L.unknown,
-      classes: theme.isDark.value
+      classes: theme.isDark
         ? 'border-white/15 bg-white/10 text-white'
         : 'border-slate-200 bg-slate-50 text-slate-700'
     }

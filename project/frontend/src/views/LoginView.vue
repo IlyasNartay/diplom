@@ -13,7 +13,7 @@ const theme = useThemeStore()
 const route = useRoute()
 const router = useRouter()
 
-const isDark = computed(() => theme.isDark.value)
+const isDark = computed(() => theme.isDark)
 
 const t = computed(() => {
   if (language.isRussian.value) {

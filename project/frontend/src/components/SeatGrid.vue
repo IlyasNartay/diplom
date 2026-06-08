@@ -17,6 +17,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 const theme = useThemeStore()
+const isDark = computed(() => theme.isDark)
 
 const groupedSeats = computed(() => {
   const grouped = new Map()
@@ -56,19 +57,19 @@ function toggleSeat(seat) {
 
 function seatClasses(seat) {
   if (seat.status === 'sold') {
-    return theme.isDark.value
+    return isDark.value
       ? 'border-rose-400/20 bg-rose-500/20 text-rose-100 cursor-not-allowed'
       : 'border-rose-200 bg-rose-50 text-rose-600 cursor-not-allowed'
   }
   if (seat.status === 'reserved') {
-    return theme.isDark.value
+    return isDark.value
       ? 'border-amber-300/20 bg-amber-400/20 text-amber-50 cursor-not-allowed'
       : 'border-amber-200 bg-amber-50 text-amber-700 cursor-not-allowed'
   }
   if (isSelected(seat)) {
     return 'border-sdu-copper bg-sdu-copper text-sdu-night shadow-copper'
   }
-  return theme.isDark.value
+  return isDark.value
     ? 'border-white/10 bg-white/5 text-white hover:border-sdu-copper/60 hover:bg-white/10'
     : 'border-slate-200 bg-white text-slate-700 hover:border-sdu-copper/50 hover:bg-amber-50'
 }
@@ -79,7 +80,7 @@ function seatClasses(seat) {
     <div
       class="rounded-[1.25rem] px-4 py-3 text-center text-[0.68rem] uppercase tracking-[0.28em] sm:rounded-[1.4rem] sm:text-xs sm:tracking-[0.34em]"
       :class="
-        theme.isDark.value
+        isDark
           ? 'border border-sdu-copper/20 bg-[linear-gradient(180deg,rgba(241,168,109,0.18),rgba(241,168,109,0.04))] text-sdu-copper/90'
           : 'border border-amber-200 bg-[linear-gradient(180deg,rgba(251,191,36,0.16),rgba(251,191,36,0.04))] text-sdu-royal'
       "
@@ -89,11 +90,11 @@ function seatClasses(seat) {
 
     <div
       class="rounded-[1.5rem] p-3 sm:p-4"
-      :class="theme.isDark.value ? 'bg-sdu-night/60 ring-1 ring-white/10' : 'bg-slate-50 ring-1 ring-slate-200'"
+      :class="isDark ? 'bg-sdu-night/60 ring-1 ring-white/10' : 'bg-slate-50 ring-1 ring-slate-200'"
     >
       <div
         class="mx-auto mb-4 h-2 w-40 rounded-full sm:w-56"
-        :class="theme.isDark.value ? 'bg-white/10' : 'bg-slate-200'"
+        :class="isDark ? 'bg-white/10' : 'bg-slate-200'"
       ></div>
 
       <div class="space-y-2.5 sm:space-y-3">
@@ -104,7 +105,7 @@ function seatClasses(seat) {
         >
           <div
             class="text-center text-[0.62rem] font-semibold uppercase tracking-[0.2em] sm:text-xs"
-            :class="theme.isDark.value ? 'text-sdu-mist/60' : 'text-slate-500'"
+            :class="isDark ? 'text-sdu-mist/60' : 'text-slate-500'"
           >
             {{ group.row }}
           </div>

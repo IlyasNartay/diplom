@@ -8,7 +8,7 @@ import { useThemeStore } from '@/stores/theme'
 const language = useLanguageStore()
 const theme = useThemeStore()
 
-const isDark = computed(() => theme.isDark.value)
+const isDark = computed(() => theme.isDark)
 
 const t = computed(() => {
   if (language.isRussian.value) {

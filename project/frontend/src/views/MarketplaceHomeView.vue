@@ -7,11 +7,13 @@ import { api } from '@/lib/api'
 import { formatMoney, normalizeAssetUrl } from '@/lib/format'
 import { useAuthStore } from '@/stores/auth'
 import { useLanguageStore } from '@/stores/language'
+import { usePwaStore } from '@/stores/pwa'
 import { useThemeStore } from '@/stores/theme'
 
 const auth = useAuthStore()
 const theme = useThemeStore()
 const language = useLanguageStore()
+const pwa = usePwaStore()
 
 const labelMap = {
   Concerts: { ru: 'Концерты', en: 'Concerts' },
@@ -425,6 +427,8 @@ onMounted(async () => {
   auth.hydrate()
   theme.hydrate()
   language.hydrate()
+  pwa.hydrate()
+  pwa.bindInstallEvents()
   await loadHomeData()
 
   if (
@@ -441,25 +445,28 @@ onMounted(async () => {
 <template>
   <div
     class="space-y-6 pb-6 transition-colors duration-300 sm:space-y-8 sm:pb-10"
-    :class="theme.isDark.value ? 'bg-[#090b18] text-white' : 'bg-[#f6f7fb] text-slate-900'"
+    :class="theme.isDark ? 'bg-[#090b18] text-white' : 'bg-[#f6f7fb] text-slate-900'"
   >
-    <section class="overflow-hidden border-b" :class="theme.isDark.value ? 'border-slate-800 bg-[#0b1022]' : 'border-slate-200 bg-white'">
+    <section class="overflow-hidden border-b" :class="theme.isDark ? 'border-slate-800 bg-[#0b1022]' : 'border-slate-200 bg-white'">
       <div class="mx-auto max-w-[94rem] px-4 py-4 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-center gap-3">
             <img src="/branding/logo_sdu.png" alt="SDU" class="h-14 w-auto object-contain sm:h-16" />
             <div>
-              <div class="text-xl font-black uppercase tracking-[0.02em] sm:text-2xl" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">
+              <div class="text-xl font-black uppercase tracking-[0.02em] sm:text-2xl" :class="theme.isDark ? 'text-white' : 'text-slate-900'">
                 High-Load Ticket Booking System
               </div>
-              <div class="text-xs uppercase tracking-[0.3em]" :class="theme.isDark.value ? 'text-sdu-copper/80' : 'text-emerald-700'">
+              <div class="text-xs uppercase tracking-[0.3em]" :class="theme.isDark ? 'text-sdu-copper/80' : 'text-emerald-700'">
                 Microservices architecture
               </div>
             </div>
           </div>
 
           <div class="flex flex-1 items-center gap-3 lg:mx-8">
-            <label class="flex w-full items-center gap-3 rounded-full border border-slate-200 bg-slate-100 px-4 py-3 text-slate-500 shadow-inner">
+            <label
+              class="flex w-full items-center gap-3 rounded-full border px-4 py-3 shadow-inner"
+              :class="theme.isDark ? 'border-white/10 bg-white/5 text-slate-300' : 'border-slate-200 bg-slate-100 text-slate-500'"
+            >
               <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="7"></circle>
                 <path d="m20 20-3.5-3.5"></path>
@@ -467,7 +474,8 @@ onMounted(async () => {
               <input
                 v-model="searchQuery"
                 type="search"
-                class="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400"
+                class="w-full bg-transparent text-sm placeholder:text-slate-400"
+                :class="theme.isDark ? 'text-white' : 'text-slate-900'"
                 :placeholder="t.search"
               />
             </label>
@@ -475,12 +483,28 @@ onMounted(async () => {
 
           <div class="flex flex-wrap items-center gap-3">
             <button
+              v-if="!pwa.installed"
               type="button"
               class="flex h-11 w-11 items-center justify-center rounded-full border transition"
-              :class="theme.isDark.value ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
+              :class="pwa.shouldShowInstallUi ? (theme.isDark ? 'border-sdu-copper/30 bg-sdu-copper/10 text-sdu-copper hover:bg-sdu-copper/20' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100') : (theme.isDark ? 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-100')"
+              title="Установить приложение"
+              aria-label="Установить приложение"
+              @click="pwa.handleInstallAction()"
+            >
+              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path>
+                <path d="M12 3v11"></path>
+                <path d="m8 7 4-4 4 4"></path>
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              class="flex h-11 w-11 items-center justify-center rounded-full border transition"
+              :class="theme.isDark ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
               @click="theme.toggleTheme()"
             >
-              <svg v-if="theme.isDark.value" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+              <svg v-if="theme.isDark" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="4"></circle>
                 <path d="M12 2v2.5"></path>
                 <path d="M12 19.5V22"></path>
@@ -499,19 +523,27 @@ onMounted(async () => {
             <button
               type="button"
               class="rounded-full border px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition"
-              :class="theme.isDark.value ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
+              :class="theme.isDark ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
               @click="language.toggleLanguage()"
             >
               {{ language.isRussian.value ? 'EN' : 'RU' }}
             </button>
 
             <template v-if="auth.isAuthenticated">
-              <RouterLink to="/history" class="rounded-full border border-slate-200 px-4 py-3 text-sm font-medium text-white">
+              <RouterLink
+                to="/history"
+                class="rounded-full border px-4 py-3 text-sm font-medium transition"
+                :class="theme.isDark ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50'"
+              >
                 {{ t.myTickets }}
               </RouterLink>
             </template>
             <template v-else>
-              <RouterLink to="/login" class="rounded-full border border-slate-200 px-4 py-3 text-sm font-medium text-white">
+              <RouterLink
+                to="/login"
+                class="rounded-full border px-4 py-3 text-sm font-medium transition"
+                :class="theme.isDark ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50'"
+              >
                 {{ t.login }}
               </RouterLink>
             </template>
@@ -519,7 +551,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="border-t" :class="theme.isDark.value ? 'border-slate-800 bg-[#0f172a]' : 'border-slate-200 bg-slate-50'">
+      <div class="border-t" :class="theme.isDark ? 'border-slate-800 bg-[#0f172a]' : 'border-slate-200 bg-slate-50'">
         <div class="mx-auto flex max-w-[94rem] gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
           <button
             v-for="category in categoryTabs"
@@ -528,10 +560,10 @@ onMounted(async () => {
             class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition"
             :class="
               selectedCategoryId === category.id
-                ? theme.isDark.value
+                ? theme.isDark
                   ? 'bg-sdu-copper text-sdu-night'
                   : 'bg-slate-900 text-white'
-                : theme.isDark.value
+                : theme.isDark
                   ? 'bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10'
                   : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
             "
@@ -546,18 +578,18 @@ onMounted(async () => {
     <section class="mx-auto max-w-[94rem] px-4 sm:px-6 lg:px-8">
       <div
         class="rounded-[2rem] px-4 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] ring-1 transition-colors duration-300 sm:px-6 sm:py-8 lg:px-8"
-        :class="theme.isDark.value ? 'bg-[#0f172a] ring-white/10' : 'bg-white ring-slate-200'"
+        :class="theme.isDark ? 'bg-[#0f172a] ring-white/10' : 'bg-white ring-slate-200'"
       >
         <div
           v-if="geoPromptVisible"
           class="mb-5 flex flex-col gap-3 rounded-[1.4rem] border px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-          :class="theme.isDark.value ? 'border-sdu-copper/20 bg-sdu-copper/10' : 'border-amber-200 bg-amber-50'"
+          :class="theme.isDark ? 'border-sdu-copper/20 bg-sdu-copper/10' : 'border-amber-200 bg-amber-50'"
         >
           <div>
-            <div class="text-sm font-semibold" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">
+            <div class="text-sm font-semibold" :class="theme.isDark ? 'text-white' : 'text-slate-900'">
               {{ detectedCityLabel ? `${t.geoConfirm} ${detectedCityLabel}. ${language.isRussian.value ? 'Выбрать его?' : 'Use this city?'}` : t.geoAsk }}
             </div>
-            <div class="mt-1 text-xs" :class="theme.isDark.value ? 'text-slate-300' : 'text-slate-500'">
+            <div class="mt-1 text-xs" :class="theme.isDark ? 'text-slate-300' : 'text-slate-500'">
               {{ t.geoHint }}
             </div>
           </div>
@@ -583,10 +615,10 @@ onMounted(async () => {
               class="whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition"
               :class="
                 selectedCityId === city.id
-                  ? theme.isDark.value
+                  ? theme.isDark
                     ? 'bg-sdu-royal text-white ring-1 ring-sdu-copper/30'
                     : 'bg-[#172554] text-white'
-                  : theme.isDark.value
+                  : theme.isDark
                     ? 'bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10'
                     : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-white'
               "
@@ -601,7 +633,7 @@ onMounted(async () => {
           <button
             type="button"
             class="rounded-full border px-4 py-2 text-sm font-medium transition"
-            :class="theme.isDark.value ? (quickRange === 'today' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'today' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
+            :class="theme.isDark ? (quickRange === 'today' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'today' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
             @click="setQuickRange('today')"
           >
             {{ t.today }}
@@ -609,7 +641,7 @@ onMounted(async () => {
           <button
             type="button"
             class="rounded-full border px-4 py-2 text-sm font-medium transition"
-            :class="theme.isDark.value ? (quickRange === 'tomorrow' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'tomorrow' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
+            :class="theme.isDark ? (quickRange === 'tomorrow' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'tomorrow' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
             @click="setQuickRange('tomorrow')"
           >
             {{ t.tomorrow }}
@@ -617,7 +649,7 @@ onMounted(async () => {
           <button
             type="button"
             class="rounded-full border px-4 py-2 text-sm font-medium transition"
-            :class="theme.isDark.value ? (quickRange === 'weekend' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'weekend' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
+            :class="theme.isDark ? (quickRange === 'weekend' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'weekend' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
             @click="setQuickRange('weekend')"
           >
             {{ t.weekend }}
@@ -625,12 +657,12 @@ onMounted(async () => {
           <button
             type="button"
             class="rounded-full border px-4 py-2 text-sm font-medium transition"
-            :class="theme.isDark.value ? (quickRange === 'week' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'week' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
+            :class="theme.isDark ? (quickRange === 'week' && !selectedDay ? 'border-sdu-copper bg-sdu-copper text-sdu-night' : 'border-white/10 bg-white/5 text-slate-200') : (quickRange === 'week' && !selectedDay ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700')"
             @click="setQuickRange('week')"
           >
             {{ t.week }}
           </button>
-          <button type="button" class="rounded-full border px-4 py-2 text-sm font-medium" :class="theme.isDark.value ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-700'" @click="resetFilters">
+          <button type="button" class="rounded-full border px-4 py-2 text-sm font-medium" :class="theme.isDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-700'" @click="resetFilters">
             {{ t.reset }}
           </button>
         </div>
@@ -645,7 +677,7 @@ onMounted(async () => {
               :class="
                 selectedDay === day.key
                   ? 'border-emerald-600 bg-emerald-600 text-white shadow-[0_18px_45px_rgba(5,150,105,0.22)]'
-                  : theme.isDark.value
+                  : theme.isDark
                     ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
                     : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'
               "
@@ -655,7 +687,7 @@ onMounted(async () => {
                 {{ day.month }}
               </div>
               <div class="mt-2 text-2xl font-bold">{{ day.day }}</div>
-              <div class="mt-1 text-xs uppercase tracking-[0.18em]" :class="selectedDay === day.key ? 'text-white/80' : theme.isDark.value ? 'text-slate-400' : 'text-slate-500'">
+              <div class="mt-1 text-xs uppercase tracking-[0.18em]" :class="selectedDay === day.key ? 'text-white/80' : theme.isDark ? 'text-slate-400' : 'text-slate-500'">
                 {{ day.weekday }}
               </div>
             </button>
@@ -696,32 +728,32 @@ onMounted(async () => {
               :key="event.id"
               :to="`/events/${event.id}`"
               class="flex overflow-hidden rounded-[1.45rem] border transition"
-              :class="theme.isDark.value ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-slate-200 bg-slate-50 hover:bg-white'"
+              :class="theme.isDark ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-slate-200 bg-slate-50 hover:bg-white'"
             >
-              <img :src="posterUrlFor(event)" :alt="event.title" class="h-full w-24 shrink-0 object-cover sm:w-40" />
+              <img :src="posterUrlFor(event)" :alt="event.title" class="h-28 w-24 shrink-0 object-cover sm:h-36 sm:w-40" />
               <div class="flex flex-1 flex-col justify-between p-3 sm:p-4">
                 <div>
-                  <div class="text-xs uppercase tracking-[0.24em]" :class="theme.isDark.value ? 'text-sdu-copper/80' : 'text-emerald-700'">{{ displayLabel(event.category?.name_ru) }}</div>
-                  <div class="mt-2 line-clamp-2 text-base font-semibold sm:text-xl" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">{{ event.title }}</div>
+                  <div class="text-xs uppercase tracking-[0.24em]" :class="theme.isDark ? 'text-sdu-copper/80' : 'text-emerald-700'">{{ displayLabel(event.category?.name_ru) }}</div>
+                  <div class="mt-2 line-clamp-2 text-base font-semibold sm:text-xl" :class="theme.isDark ? 'text-white' : 'text-slate-900'">{{ event.title }}</div>
                 </div>
-                <div class="mt-3 text-xs sm:mt-4 sm:text-sm" :class="theme.isDark.value ? 'text-slate-300' : 'text-slate-500'">
+                <div class="mt-3 text-xs sm:mt-4 sm:text-sm" :class="theme.isDark ? 'text-slate-300' : 'text-slate-500'">
                   {{ event.nextSession ? heroDateFormatter.format(new Date(event.nextSession.start_time)) : t.dateTbd }}
                 </div>
               </div>
             </RouterLink>
 
-            <div class="rounded-[1.6rem] border p-5" :class="theme.isDark.value ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'">
+            <div class="rounded-[1.6rem] border p-5" :class="theme.isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'">
               <div class="text-xs uppercase tracking-[0.24em] text-slate-400">{{ t.selected }}</div>
-              <div class="mt-3 text-2xl font-semibold" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">{{ activeCityLabel }}</div>
-              <div class="mt-2 text-sm" :class="theme.isDark.value ? 'text-slate-300' : 'text-slate-500'">{{ activeDateLabel }}</div>
+              <div class="mt-3 text-2xl font-semibold" :class="theme.isDark ? 'text-white' : 'text-slate-900'">{{ activeCityLabel }}</div>
+              <div class="mt-2 text-sm" :class="theme.isDark ? 'text-slate-300' : 'text-slate-500'">{{ activeDateLabel }}</div>
               <div class="mt-6 grid grid-cols-2 gap-3">
-                <div class="rounded-[1.1rem] p-4" :class="theme.isDark.value ? 'bg-sdu-night/70' : 'bg-white'">
+                <div class="rounded-[1.1rem] p-4" :class="theme.isDark ? 'bg-sdu-night/70' : 'bg-white'">
                   <div class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t.events }}</div>
-                  <div class="mt-2 text-2xl font-bold" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">{{ filteredEvents.length }}</div>
+                  <div class="mt-2 text-2xl font-bold" :class="theme.isDark ? 'text-white' : 'text-slate-900'">{{ filteredEvents.length }}</div>
                 </div>
-                <div class="rounded-[1.1rem] p-4" :class="theme.isDark.value ? 'bg-sdu-night/70' : 'bg-white'">
+                <div class="rounded-[1.1rem] p-4" :class="theme.isDark ? 'bg-sdu-night/70' : 'bg-white'">
                   <div class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t.categories }}</div>
-                  <div class="mt-2 text-2xl font-bold" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">{{ categories.length }}</div>
+                  <div class="mt-2 text-2xl font-bold" :class="theme.isDark ? 'text-white' : 'text-slate-900'">{{ categories.length }}</div>
                 </div>
               </div>
             </div>
@@ -732,12 +764,12 @@ onMounted(async () => {
 
     <section id="catalog" class="mx-auto max-w-[94rem] px-4 sm:px-6 lg:px-8">
       <div class="flex items-center gap-4">
-        <div class="h-px flex-1" :class="theme.isDark.value ? 'bg-white/10' : 'bg-slate-300'"></div>
-        <div class="text-2xl font-black uppercase tracking-[0.08em] sm:text-4xl" :class="theme.isDark.value ? 'text-white' : 'text-slate-950'">{{ t.popular }}</div>
-        <div class="rounded-full border px-4 py-1 text-sm font-medium" :class="theme.isDark.value ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-300 bg-white text-slate-600'">
+        <div class="h-px flex-1" :class="theme.isDark ? 'bg-white/10' : 'bg-slate-300'"></div>
+        <div class="text-2xl font-black uppercase tracking-[0.08em] sm:text-4xl" :class="theme.isDark ? 'text-white' : 'text-slate-950'">{{ t.popular }}</div>
+        <div class="rounded-full border px-4 py-1 text-sm font-medium" :class="theme.isDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-300 bg-white text-slate-600'">
           {{ t.more }} {{ Math.max(filteredEvents.length - popularEvents.length, 0) }}
         </div>
-        <div class="h-px flex-1" :class="theme.isDark.value ? 'bg-white/10' : 'bg-slate-300'"></div>
+        <div class="h-px flex-1" :class="theme.isDark ? 'bg-white/10' : 'bg-slate-300'"></div>
       </div>
 
       <div class="mt-6">
@@ -749,13 +781,18 @@ onMounted(async () => {
           <div
             v-for="index in 8"
             :key="index"
-            class="h-[27rem] rounded-[1.8rem] bg-[linear-gradient(90deg,#f1f5f9,#ffffff,#f1f5f9)] bg-[length:200%_100%] animate-shimmer ring-1 ring-slate-200"
+            class="h-[27rem] rounded-[1.8rem] bg-[length:200%_100%] animate-shimmer ring-1"
+            :class="
+              theme.isDark
+                ? 'bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))] ring-white/10'
+                : 'bg-[linear-gradient(90deg,#f1f5f9,#ffffff,#f1f5f9)] ring-slate-200'
+            "
           ></div>
         </div>
 
-        <div v-else-if="!popularEvents.length" class="rounded-[1.8rem] border p-8 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]" :class="theme.isDark.value ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'">
-          <div class="text-3xl font-display" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">{{ t.noResults }}</div>
-          <p class="mt-3 text-sm" :class="theme.isDark.value ? 'text-slate-300' : 'text-slate-500'">
+        <div v-else-if="!popularEvents.length" class="rounded-[1.8rem] border p-8 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]" :class="theme.isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'">
+          <div class="text-3xl font-display" :class="theme.isDark ? 'text-white' : 'text-slate-900'">{{ t.noResults }}</div>
+          <p class="mt-3 text-sm" :class="theme.isDark ? 'text-slate-300' : 'text-slate-500'">
             {{ t.noResultsText }}
           </p>
         </div>

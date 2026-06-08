@@ -21,7 +21,7 @@ pwa.bindInstallEvents()
 
 <template>
   <div class="min-h-screen transition-colors duration-300" :class="theme.isDark ? 'theme-dark bg-sdu-night text-white' : 'theme-light bg-[#f6f7fb] text-slate-900'">
-    <div v-if="theme.isDark" class="fixed inset-0 -z-10 overflow-hidden">
+    <div v-if="!theme.isLight" class="fixed inset-0 -z-10 overflow-hidden">
       <div class="absolute inset-x-0 top-[-16rem] h-[28rem] bg-[radial-gradient(circle_at_top,rgba(241,168,109,0.16),transparent_50%)]"></div>
       <div class="absolute left-[-8rem] top-20 h-72 w-72 rounded-full bg-sdu-royal/20 blur-3xl"></div>
       <div class="absolute bottom-10 right-[-6rem] h-80 w-80 rounded-full bg-sdu-copper/10 blur-3xl"></div>

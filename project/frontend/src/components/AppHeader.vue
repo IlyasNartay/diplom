@@ -57,7 +57,7 @@ function signOut() {
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 border-b backdrop-blur-2xl transition-colors duration-300" :class="theme.isDark.value ? 'border-white/10 bg-sdu-night/70' : 'border-slate-200 bg-white/90'">
+  <header class="sticky top-0 z-40 border-b backdrop-blur-2xl transition-colors duration-300" :class="theme.isDark ? 'border-white/10 bg-sdu-night/70' : 'border-slate-200 bg-white/90'">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4 lg:px-8">
       <RouterLink to="/" class="flex min-w-0 items-center gap-3 sm:gap-4">
         <img
@@ -66,8 +66,8 @@ function signOut() {
           class="h-10 w-auto shrink-0 object-contain sm:h-14"
         />
         <div class="hidden min-w-0 sm:block">
-          <div class="truncate font-display text-xl tracking-[0.12em]" :class="theme.isDark.value ? 'text-white' : 'text-slate-900'">High-Load Ticket Booking System</div>
-          <div class="text-[0.68rem] uppercase tracking-[0.38em]" :class="theme.isDark.value ? 'text-sdu-copper/80' : 'text-emerald-700'">Microservices architecture</div>
+          <div class="truncate font-display text-xl tracking-[0.12em]" :class="theme.isDark ? 'text-white' : 'text-slate-900'">High-Load Ticket Booking System</div>
+          <div class="text-[0.68rem] uppercase tracking-[0.38em]" :class="theme.isDark ? 'text-sdu-copper/80' : 'text-emerald-700'">Microservices architecture</div>
         </div>
       </RouterLink>
 
@@ -78,9 +78,9 @@ function signOut() {
           :to="item.to"
           class="rounded-full px-4 py-2 text-sm transition"
           :class="[
-            theme.isDark.value ? 'text-sdu-mist/80 hover:bg-white/5 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
+            theme.isDark ? 'text-sdu-mist/80 hover:bg-white/5 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
             route.path === item.to
-              ? theme.isDark.value
+              ? theme.isDark
                 ? 'bg-white/10 text-white'
                 : 'bg-slate-900 text-white'
               : ''
@@ -95,10 +95,10 @@ function signOut() {
           v-if="!pwa.installed"
           type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition sm:h-11 sm:w-11"
-          :class="pwa.shouldShowInstallUi ? (theme.isDark.value ? 'border-sdu-copper/30 bg-sdu-copper/10 text-sdu-copper hover:bg-sdu-copper/20' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100') : (theme.isDark.value ? 'border-white/10 bg-white/5 text-slate-400 opacity-70' : 'border-slate-200 bg-white text-slate-400 opacity-70')"
+          :class="pwa.shouldShowInstallUi ? (theme.isDark ? 'border-sdu-copper/30 bg-sdu-copper/10 text-sdu-copper hover:bg-sdu-copper/20' : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100') : (theme.isDark ? 'border-white/10 bg-white/5 text-slate-400 opacity-70' : 'border-slate-200 bg-white text-slate-400 opacity-70')"
           :title="pwa.canShowIosInstallHint ? 'Use Share and Add to Home Screen on iPhone/iPad' : pwa.canShowInstallPrompt ? 'Add to home screen' : 'Open the site and install the app'"
           :aria-label="pwa.canShowIosInstallHint ? 'Install app instructions for iOS' : pwa.canShowInstallPrompt ? 'Add to home screen' : 'Install app unavailable yet'"
-          @click="pwa.canShowInstallPrompt ? pwa.installApp() : null"
+          @click="pwa.handleInstallAction()"
         >
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path>
@@ -109,11 +109,13 @@ function signOut() {
 
         <button
           type="button"
-          class="hidden h-10 w-10 items-center justify-center rounded-full border transition sm:inline-flex"
-          :class="theme.isDark.value ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition sm:h-11 sm:w-11"
+          :class="theme.isDark ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
+          title="Сменить тему"
+          aria-label="Сменить тему"
           @click="theme.toggleTheme()"
         >
-          <svg v-if="theme.isDark.value" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+          <svg v-if="theme.isDark" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="4"></circle>
             <path d="M12 2v2.5"></path>
             <path d="M12 19.5V22"></path>
@@ -132,14 +134,14 @@ function signOut() {
         <button
           type="button"
           class="hidden rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] transition sm:inline-flex"
-          :class="theme.isDark.value ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
+          :class="theme.isDark ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'"
           @click="language.toggleLanguage()"
         >
           {{ language.isRussian.value ? 'EN' : 'RU' }}
         </button>
 
         <template v-if="auth.isAuthenticated">
-          <span class="hidden rounded-full border px-4 py-2 text-xs uppercase tracking-[0.24em] sm:inline-flex" :class="theme.isDark.value ? 'border-white/10 bg-white/5 text-sdu-copper/80' : 'border-slate-200 bg-slate-50 text-emerald-700'">
+          <span class="hidden rounded-full border px-4 py-2 text-xs uppercase tracking-[0.24em] sm:inline-flex" :class="theme.isDark ? 'border-white/10 bg-white/5 text-sdu-copper/80' : 'border-slate-200 bg-slate-50 text-emerald-700'">
             {{ auth.user.role }}
           </span>
           <button class="btn-secondary px-3 py-2 text-xs sm:px-4 sm:text-sm" @click="signOut">
