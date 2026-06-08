@@ -3,7 +3,7 @@ name: Deploy to DigitalOcean VPS
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
@@ -21,10 +21,22 @@ jobs:
           script: |
             set -e
 
-            cd ~/ticketon-microservices
+            REPO_ROOT=~/ticketon-microservices
+            if [ -d "$REPO_ROOT/project/backend" ]; then
+              cd "$REPO_ROOT/project/backend"
+            else
+              cd "$REPO_ROOT"
+            fi
 
-            git checkout master
-            git pull origin master
+            git fetch origin
+            git checkout main
+            git pull origin main
+
+            if [ -f .env.prod ]; then
+              COMPOSE="docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml"
+            else
+              COMPOSE="docker compose"
+            fi
 
             # ---------- 1. Ensure Docker Compose V2 ----------
             if ! docker compose version >/dev/null 2>&1; then
@@ -35,13 +47,13 @@ jobs:
             fi
 
             # ---------- 2. Build new images (no restart yet) ----------
-            docker compose build
+            $COMPOSE build
 
             # ---------- 3. Start/ensure infrastructure is healthy ----------
-            docker compose up -d postgres kafka redis zookeeper
+            $COMPOSE up -d postgres kafka redis zookeeper
             echo "Waiting for Postgres to be healthy..."
             for i in $(seq 1 30); do
-              if docker compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+              if $COMPOSE exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
                 echo "Postgres is ready."
                 break
               fi
@@ -54,12 +66,12 @@ jobs:
 
             # ---------- 4. Run Alembic migrations BEFORE restarting apps ----------
             echo "Running database migrations..."
-            docker compose run --rm -T --no-deps --entrypoint "" \
+            $COMPOSE run --rm -T --no-deps --entrypoint "" \
               orchestrator alembic upgrade head
             echo "Migrations applied successfully."
 
             # ---------- 5. Restart app services with new images ----------
-            docker compose up -d --no-build --remove-orphans
+            $COMPOSE up -d --no-build --remove-orphans
 
             # ---------- 6. Cleanup ----------
             docker image prune -f
