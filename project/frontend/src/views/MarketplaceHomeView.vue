@@ -21,7 +21,8 @@ const labelMap = {
   Classical: { ru: 'Классика', en: 'Classical' },
   Almaty: { ru: 'Алматы', en: 'Almaty' },
   Astana: { ru: 'Астана', en: 'Astana' },
-  Konaev: { ru: 'Конаев', en: 'Konaev' }
+  Konaev: { ru: 'Конаев', en: 'Konaev' },
+  Kaskelen: { ru: 'Каскелен', en: 'Kaskelen' }
 }
 
 const events = ref([])

@@ -54,6 +54,7 @@ CITIES = [
     {"name_ru": "Астана", "name_en": "Astana", "name_kz": "Астана"},
     {"name_ru": "Шымкент", "name_en": "Shymkent", "name_kz": "Шымкент"},
     {"name_ru": "Атырау", "name_en": "Atyrau", "name_kz": "Атырау"},
+    {"name_ru": "Каскелен", "name_en": "Kaskelen", "name_kz": "Қаскелең"},
 ]
 
 EVENTS = [
@@ -246,6 +247,35 @@ EVENTS = [
             CityEventSeed(
                 city_ru="Шымкент",
                 sessions=[SessionSeed("2026-05-16T09:00:00", "Hotel Meridian", 1800)],
+            ),
+        ],
+    ),
+    EventSeed(
+        title="SDU OPEN AIR",
+        description="Летний концерт на кампусе SDU в Каскелене с локальными артистами",
+        category_ru="Концерты",
+        poster_url="https://images.unsplash.com/photo-1770737639812-bd3c709da73b?auto=format&fit=crop&fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=60&w=1200",
+        city_events=[
+            CityEventSeed(
+                city_ru="Каскелен",
+                sessions=[
+                    SessionSeed("2026-06-20T18:00:00", "SDU Main Lawn", 3500),
+                    SessionSeed("2026-06-21T18:00:00", "SDU Main Lawn", 3500),
+                ],
+            ),
+        ],
+    ),
+    EventSeed(
+        title="KASKELEN JAZZ NIGHT",
+        description="Вечер джаза и акустики в центре Каскелена",
+        category_ru="Фестивали",
+        poster_url="https://images.unsplash.com/photo-1683731495404-0fae506e2717?auto=format&fit=crop&fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=60&w=1200",
+        city_events=[
+            CityEventSeed(
+                city_ru="Каскелен",
+                sessions=[
+                    SessionSeed("2026-06-28T19:30:00", "Kaskelen Culture House", 2800),
+                ],
             ),
         ],
     ),
