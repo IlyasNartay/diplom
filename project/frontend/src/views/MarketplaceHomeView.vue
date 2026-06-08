@@ -506,12 +506,12 @@ onMounted(async () => {
             </button>
 
             <template v-if="auth.isAuthenticated">
-              <RouterLink to="/history" class="rounded-full border border-slate-200 px-4 py-3 text-sm font-medium text-slate-800">
+              <RouterLink to="/history" class="rounded-full border border-slate-200 px-4 py-3 text-sm font-medium text-white">
                 {{ t.myTickets }}
               </RouterLink>
             </template>
             <template v-else>
-              <RouterLink to="/login" class="rounded-full border border-slate-200 px-4 py-3 text-sm font-medium text-slate-800">
+              <RouterLink to="/login" class="rounded-full border border-slate-200 px-4 py-3 text-sm font-medium text-white">
                 {{ t.login }}
               </RouterLink>
             </template>
@@ -574,25 +574,27 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
-          <button
-            v-for="city in cityTabs"
-            :key="city.id || 'all-cities'"
-            type="button"
-            class="rounded-full px-4 py-2.5 text-sm font-medium transition"
-            :class="
-              selectedCityId === city.id
-                ? theme.isDark.value
-                  ? 'bg-sdu-royal text-white ring-1 ring-sdu-copper/30'
-                  : 'bg-[#172554] text-white'
-                : theme.isDark.value
-                  ? 'bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10'
-                  : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-white'
-            "
-            @click="selectedCityId = city.id"
-          >
-            {{ city.label }}
-          </button>
+        <div class="max-[549px]:scrollbar-none max-[549px]:overflow-x-auto">
+          <div class="flex gap-2 sm:gap-3 max-[549px]:min-w-max min-[550px]:flex-wrap min-[550px]:justify-center">
+            <button
+              v-for="city in cityTabs"
+              :key="city.id || 'all-cities'"
+              type="button"
+              class="whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition"
+              :class="
+                selectedCityId === city.id
+                  ? theme.isDark.value
+                    ? 'bg-sdu-royal text-white ring-1 ring-sdu-copper/30'
+                    : 'bg-[#172554] text-white'
+                  : theme.isDark.value
+                    ? 'bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10'
+                    : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-white'
+              "
+              @click="selectedCityId = city.id"
+            >
+              {{ city.label }}
+            </button>
+          </div>
         </div>
 
         <div class="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3">

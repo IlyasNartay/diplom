@@ -15,7 +15,7 @@ const pwa = usePwaStore()
   >
     <div
       v-if="pwa.shouldShowInstallUi"
-      class="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-md"
+      class="fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] mx-auto max-w-md md:bottom-4"
     >
       <div class="overflow-hidden rounded-[1.6rem] border border-sdu-copper/20 bg-[#0b1020]/96 shadow-[0_24px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl">
         <div class="h-1 w-full bg-gradient-to-r from-sdu-royal via-sdu-copper to-emerald-400"></div>

@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue'
+import { defineStore } from 'pinia'
 
 export const PWA_DISMISSED_AT_KEY = 'ticketon-pwa-install-dismissed-at'
 export const PWA_DISMISS_REASON_KEY = 'ticketon-pwa-install-dismiss-reason'
@@ -6,15 +7,6 @@ export const PWA_INSTALLED_KEY = 'ticketon-pwa-installed'
 
 const SESSION_DISMISS_MS = 1000 * 60 * 30
 const PERSISTENT_DISMISS_MS = 1000 * 60 * 60 * 24 * 7
-
-const deferredPrompt = ref(null)
-const canInstall = ref(false)
-const dismissed = ref(false)
-const dismissedAt = ref(0)
-const dismissReason = ref('')
-const installed = ref(false)
-
-let listenersBound = false
 
 function isStandaloneMode() {
   if (typeof window === 'undefined') {
@@ -62,75 +54,15 @@ function persistFlag(key, value) {
   }
 }
 
-function persistDismissState() {
-  if (typeof window === 'undefined') {
-    return
-  }
+export const usePwaStore = defineStore('pwa', () => {
+  const deferredPrompt = ref(null)
+  const canInstall = ref(false)
+  const dismissed = ref(false)
+  const dismissedAt = ref(0)
+  const dismissReason = ref('')
+  const installed = ref(false)
+  const listenersBound = ref(false)
 
-  if (dismissed.value && dismissedAt.value > 0) {
-    window.localStorage.setItem(PWA_DISMISSED_AT_KEY, String(dismissedAt.value))
-
-    if (dismissReason.value) {
-      window.localStorage.setItem(PWA_DISMISS_REASON_KEY, dismissReason.value)
-    } else {
-      window.localStorage.removeItem(PWA_DISMISS_REASON_KEY)
-    }
-  } else {
-    window.localStorage.removeItem(PWA_DISMISSED_AT_KEY)
-    window.localStorage.removeItem(PWA_DISMISS_REASON_KEY)
-  }
-}
-
-function dismissTtl() {
-  return dismissReason.value === 'later' ? SESSION_DISMISS_MS : PERSISTENT_DISMISS_MS
-}
-
-function isDismissExpired() {
-  if (!dismissed.value || !dismissedAt.value) {
-    return true
-  }
-
-  return Date.now() - dismissedAt.value >= dismissTtl()
-}
-
-function clearDismissState() {
-  dismissed.value = false
-  dismissedAt.value = 0
-  dismissReason.value = ''
-  persistDismissState()
-}
-
-function markInstalled() {
-  installed.value = true
-  canInstall.value = false
-  deferredPrompt.value = null
-  clearDismissState()
-  persistFlag(PWA_INSTALLED_KEY, true)
-}
-
-function onBeforeInstallPrompt(event) {
-  event.preventDefault()
-  deferredPrompt.value = event
-
-  if (installed.value) {
-    canInstall.value = false
-    return
-  }
-
-  if (dismissed.value && isDismissExpired()) {
-    clearDismissState()
-  }
-
-  if (!dismissed.value) {
-    canInstall.value = true
-  }
-}
-
-function onAppInstalled() {
-  markInstalled()
-}
-
-export function usePwaStore() {
   const canShowInstallPrompt = computed(() => canInstall.value && !dismissed.value && !installed.value)
   const isMobile = computed(() => isMobileViewport())
   const isIos = computed(() => isIosDevice())
@@ -141,6 +73,74 @@ export function usePwaStore() {
   const shouldShowInstallUi = computed(
     () => !installed.value && !dismissed.value && (canInstall.value || canShowIosInstallHint.value)
   )
+
+  function dismissTtl() {
+    return dismissReason.value === 'later' ? SESSION_DISMISS_MS : PERSISTENT_DISMISS_MS
+  }
+
+  function isDismissExpired() {
+    if (!dismissed.value || !dismissedAt.value) {
+      return true
+    }
+
+    return Date.now() - dismissedAt.value >= dismissTtl()
+  }
+
+  function persistDismissState() {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    if (dismissed.value && dismissedAt.value > 0) {
+      window.localStorage.setItem(PWA_DISMISSED_AT_KEY, String(dismissedAt.value))
+
+      if (dismissReason.value) {
+        window.localStorage.setItem(PWA_DISMISS_REASON_KEY, dismissReason.value)
+      } else {
+        window.localStorage.removeItem(PWA_DISMISS_REASON_KEY)
+      }
+    } else {
+      window.localStorage.removeItem(PWA_DISMISSED_AT_KEY)
+      window.localStorage.removeItem(PWA_DISMISS_REASON_KEY)
+    }
+  }
+
+  function clearDismissState() {
+    dismissed.value = false
+    dismissedAt.value = 0
+    dismissReason.value = ''
+    persistDismissState()
+  }
+
+  function markInstalled() {
+    installed.value = true
+    canInstall.value = false
+    deferredPrompt.value = null
+    clearDismissState()
+    persistFlag(PWA_INSTALLED_KEY, true)
+  }
+
+  function onBeforeInstallPrompt(event) {
+    event.preventDefault()
+    deferredPrompt.value = event
+
+    if (installed.value) {
+      canInstall.value = false
+      return
+    }
+
+    if (dismissed.value && isDismissExpired()) {
+      clearDismissState()
+    }
+
+    if (!dismissed.value) {
+      canInstall.value = true
+    }
+  }
+
+  function onAppInstalled() {
+    markInstalled()
+  }
 
   function hydrate() {
     if (typeof window === 'undefined') {
@@ -165,11 +165,11 @@ export function usePwaStore() {
   }
 
   function bindInstallEvents() {
-    if (typeof window === 'undefined' || listenersBound) {
+    if (typeof window === 'undefined' || listenersBound.value) {
       return
     }
 
-    listenersBound = true
+    listenersBound.value = true
     if (isStandaloneMode()) {
       markInstalled()
     }
@@ -236,4 +236,4 @@ export function usePwaStore() {
     snoozeInstallPrompt,
     resetInstallState
   }
-}
+})
